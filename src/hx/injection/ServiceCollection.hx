@@ -48,6 +48,14 @@ class ServiceCollection {
         return this;
     }
     
+    public function addTransient<T : Service, V : T>(type : Class<T>, service : Class<V>) : ServiceCollection {
+        var serviceName = Type.getClassName(type);
+        var service = ServiceType.Transient(Type.getClassName(service));
+        _requestedServices.set(serviceName, service);
+        
+        return this;
+    }
+    
     public function createProvider() : ServiceProvider {
         var provider = new ServiceProvider(_configs, _requestedServices);
         

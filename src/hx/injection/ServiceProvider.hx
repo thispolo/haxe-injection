@@ -49,17 +49,12 @@ class ServiceProvider {
         return Std.downcast(service, type);
     }
     
-    /*
-    private function createDependencyTree() : Void {
-        for(service in _requestedServices.keyValueIterator()) {
-            handleService(service.key, service.value);
-        }
-    }
-    */
     private function handleServiceRequest(serviceName : String, service : ServiceType) : Service {
         switch(service) {
             case Singleton(service):
                 return handleSingletonService(serviceName, service);
+            case Transient(service):
+                return handleTransientService(serviceName, service);
             default:
         }
     }
@@ -71,6 +66,10 @@ class ServiceProvider {
             _services.set(serviceName, instance);
         }
         return instance;
+    }
+
+    private function handleTransientService(serviceName : String, service : String) : Service {
+        return buildDependencyTree(service);
     }
 
     private function buildDependencyTree(service : String) : Service {

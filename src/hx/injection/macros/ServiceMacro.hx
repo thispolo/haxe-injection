@@ -24,9 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import haxe.macro.TypeTools;
 import haxe.macro.Context;
-import haxe.macro.Type;
 import haxe.macro.Expr;
 
 #if macro
