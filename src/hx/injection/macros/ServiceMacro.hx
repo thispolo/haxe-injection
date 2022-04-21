@@ -62,6 +62,7 @@ class ServiceMacro {
                         }
                     default:
                 }
+                
                 var newField = {
                     name: "getConstructorArgs",
                     access: [Access.APrivate],

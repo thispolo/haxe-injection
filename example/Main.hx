@@ -2,24 +2,26 @@ package example;
 
 import hx.injection.*;
 
+using example.TestExtensions;
+
 class Main {
 
     static public function main() : Void {
       // Example 1:
       var collection = new ServiceCollection();
-      collection.add(TestService, NormalTestService);
+      collection.addTest();
       collection.addConfig(new TestConfig());
 
       var provider = collection.createProvider();
-      sayWord(provider.getService(TestService));
+      sayWord(provider.getTest());
       
       // Example 2:
       var collection = new ServiceCollection();
-      collection.add(TestService, LoudTestService);
+      collection.addLoudTest();
       collection.addConfig(new TestConfig());
 
       var provider = collection.createProvider();
-      sayWord(provider.getService(TestService));
+      sayWord(provider.getTest());
       
     }
 
