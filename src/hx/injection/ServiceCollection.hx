@@ -29,13 +29,11 @@ SOFTWARE.
 class ServiceCollection {
     
     private var _configs : Map<String, Any>;
-    private var _requestedServices : Map<String, Class<Service>>;
-    private var _services : Map<String, Service>;
+    private var _requestedServices : Map<String, ServiceType>;
     
     public function new() {
-        _requestedServices = new Map();
         _configs = new Map();
-        _services = new Map();
+        _requestedServices = new Map();
     }
     
     public function addConfig<T>(config : T) : Void {
@@ -43,66 +41,29 @@ class ServiceCollection {
     }
     
     public function addSingleton<T : Service, V : T>(type : Class<T>, service : Class<V>) : ServiceCollection {
-        _requestedServices.set(Type.getClassName(type), cast service);
+        var serviceName = Type.getClassName(type);
+        var service = ServiceType.Singleton(Type.getClassName(service));
+        _requestedServices.set(serviceName, service);
         
         return this;
     }
     
     public function createProvider() : ServiceProvider {
-        createDependencyTree();
-        return new ServiceProvider(_services);
-    }
-
-    private function createDependencyTree() : Void {
-        for(service in _requestedServices.keyValueIterator()) {
-            handleService(service.key, service.value);
-        }
-    }
-
-    private function handleService(interfaceName : String, service : Class<Service>) : Service {
-        var instance = getHandled(interfaceName);
-        if(instance != null) {
-            return instance;
-        }
-
-        var args = getServiceArgs(service);
-        var dependencies = [];
-        for(arg in args) {
-            var dependency = getService(arg);
-            if(dependency != null) {
-                dependencies.push(handleService(arg, dependency));
-                continue;
-            }
-
-            var config = _configs.get(arg);
-            if(config != null) {
-                dependencies.push(config);
-                continue;
-            }
-
-            throw new Exception('Dependency ' + arg + ' for ' + service + ' is missing. Did you add it to the collection?');
-        }
-
-        instance = Type.createInstance(service, dependencies);
-        _services.set(interfaceName, instance);
-
-        return instance;
-    }
-
-    private function getService(arg : String) : Class<Service> {
-        return _requestedServices.get(arg);
+        var provider = new ServiceProvider(_configs, _requestedServices);
+        
+        return provider;
     }
 
     private function configExists(arg : String) : Bool {
         return _configs.get(arg) != null;
     }
 
-    private function getServiceArgs(service : Class<Service>) : Array<String> {
-        var instance = Type.createEmptyInstance(service);
-        return instance.getConstructorArgs();
+    public function toString() : String {
+        var string = "\nApplication services:- \n";
+        for (service in _requestedServices) {
+            string += "\t" + service + "\n";
+        }
+        return string;
     }
 
-    private function getHandled(interfaceName : String) : Service {
-        return _services.get(interfaceName);
-    }
 }

@@ -26,6 +26,6 @@ SOFTWARE.
 
 @:autoBuild(hx.injection.macros.ServiceMacro.build())
 interface Service {
-    @:allow(hx.injection.ServiceCollection)
+    @:allow(hx.injection.ServiceProvider)
     private function getConstructorArgs() : Array<String>;
 }

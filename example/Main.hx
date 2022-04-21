@@ -11,7 +11,7 @@ class Main {
       var collection = new ServiceCollection();
       collection.addTest();
       collection.addConfig(new TestConfig());
-
+      
       var provider = collection.createProvider();
       sayWord(provider.getTest());
       

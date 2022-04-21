@@ -1,8 +1,5 @@
 package hx.injection;
 
-import haxe.Exception;
-
-
 /*
 MIT License
 
@@ -29,32 +26,92 @@ SOFTWARE.
 
 class ServiceProvider {
 
+    private var _requestedConfigs : Map<String, Any>;
+    private var _requestedServices : Map<String, ServiceType>;
+
     private var _services : Map<String, Service>;
     
-    public function new(services : Map<String, Service>) {
-        _services = services;
+    public function new(configs : Map<String, Any>, services : Map<String, ServiceType>) {
+        _requestedConfigs = configs;
+        _requestedServices = services;
+        _services = new Map();
     }
     
     public function getService<S : Service>(type : Class<S>) : S {
-        var service = _services.get(Type.getClassName(type));
-        if(service == null) {
-            throw new Exception("Service of type " + type + " not found.");
+        var serviceName = Type.getClassName(type);
+        var requestedService = _requestedServices.get(serviceName);
+        if(requestedService == null) {
+            throw new haxe.Exception("Service of type " + type + " not found.");
         }
-        return cast service;
+
+        var service = handleServiceRequest(serviceName, requestedService);
+
+        return Std.downcast(service, type);
     }
     
-    private function constructInstance<S>(service : Class<S>) : S {
-        var service = Type.createInstance(service, []);
-        
-        return service;
-    }
-    
-    public function toString() : String {
-        var string = "\nApplication services:- \n";
-        for (service in _services) {
-            string += "\t" + service + "\n";
+    /*
+    private function createDependencyTree() : Void {
+        for(service in _requestedServices.keyValueIterator()) {
+            handleService(service.key, service.value);
         }
-        return string;
+    }
+    */
+    private function handleServiceRequest(serviceName : String, service : ServiceType) : Service {
+        switch(service) {
+            case Singleton(service):
+                return handleSingletonService(serviceName, service);
+            default:
+        }
     }
 
+    private function handleSingletonService(serviceName : String, service : String) : Service {
+        var instance = getHandled(serviceName);
+        if(instance == null) {
+            instance = buildDependencyTree(service);
+            _services.set(serviceName, instance);
+        }
+        return instance;
+    }
+
+    private function buildDependencyTree(service : String) : Service {
+        var dependencies = [];
+        var args = getServiceArgs(service);
+        for(arg in args) {
+            var dependency = getRequestedService(arg);
+            if(dependency != null) {
+                var serviceInstance = handleServiceRequest(arg, dependency);
+                dependencies.push(serviceInstance);
+                continue;
+            }
+            
+            var config = getRequestedConfig(arg);
+            if(config != null) {
+                dependencies.push(config);
+                continue;
+            }
+
+            throw new haxe.Exception('Dependency ' + arg + ' for ' + service + ' is missing. Did you add it to the collection?');
+        }
+
+        return Type.createInstance(Type.resolveClass(service), dependencies);
+    }
+
+    private function getServiceArgs(service : String) : Array<String> {
+        var type = Type.resolveClass(service);
+        var instance = Type.createEmptyInstance(type);
+        return instance.getConstructorArgs();
+    }
+
+    private function getHandled(serviceName : String) : Service {
+        return _services.get(serviceName);
+    }
+
+    private function getRequestedConfig(config : String) : Any {
+        return _requestedConfigs.get(config);
+    }
+
+    private function getRequestedService(serviceName : String) : ServiceType {
+        return _requestedServices.get(serviceName);
+    }
+    
 }
