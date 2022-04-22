@@ -1,4 +1,4 @@
-package hx.injection.macros;
+package hx.injection;
 
 /*
 	MIT License
@@ -23,10 +23,7 @@ package hx.injection.macros;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-class ServiceTools {
-	private static var _serviceMap:Map<String, String> = new Map();
-
-	public static function getService(key:String):String {
-		return _serviceMap.get(key);
-	}
+enum ServiceType {
+	Singleton(service:String);
+	Transient(service:String);
 }
