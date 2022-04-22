@@ -3,12 +3,15 @@ package example;
 class LoudTestService implements TestService {
 
     private var _config : TestConfig;
+    private var _logging : LoggingService;
 
-    public function new(config : TestConfig) {
+    public function new(config : TestConfig, logging : LoggingService) {
         _config = config;
+        _logging = logging;
     }
 
     public function sayWord() : Void {
-        trace(_config.word.toUpperCase());
+        _logging.log(_config.word.toUpperCase());
     }
+    
 }
