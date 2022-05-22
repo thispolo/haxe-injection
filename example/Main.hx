@@ -44,7 +44,8 @@ class Main {
     private static function test3() : Void {
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService);
-      collection.addTransient(TestService, LoudTestService);
+      collection.addTransient(AnotherService);
+      collection.addTransient(TestService, LouderTestService);
       collection.addConfig(new TestConfig());
       
       var provider = collection.createProvider();

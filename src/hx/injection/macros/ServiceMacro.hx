@@ -60,9 +60,15 @@ class ServiceMacro {
 					default:
 				}
 
+				var isSubclass = (classType.superClass != null);
+				var access = [Access.APrivate];
+				if(isSubclass) {
+					access.push(Access.AOverride);
+				}
+
 				var newField = {
 					name: "getConstructorArgs",
-					access: [Access.APrivate],
+					access: access,
 					kind: FFun({args: [], ret: macro:Array<String>, expr: macro return $v{constructorArgs}}),
 					pos: Context.currentPos(),
 				}
