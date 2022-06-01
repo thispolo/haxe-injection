@@ -15,6 +15,9 @@ class Main {
       
       // Example 3:
       test3();
+      
+      // Example 4:
+      test4();
     }
 
     private static function test1() : Void {
@@ -58,4 +61,38 @@ class Main {
       service.sayWord();
     }
 
+    private static function test4() : Void {
+      var collection = new ServiceCollection();
+      collection.addSingleton(SingletonIDPrinter);
+      collection.addTransient(TransientIDPrinter);
+      collection.addScoped(ScopedIDPrinter);
+      
+      trace('*** NEW SCOPE ***');
+
+      var provider = collection.createProvider();
+      var id1 = provider.getService(SingletonIDPrinter);
+      var id2 = provider.getService(TransientIDPrinter);
+      var id3 = provider.getService(TransientIDPrinter);
+      var id4 = provider.getService(ScopedIDPrinter);
+      var id5 = provider.getService(ScopedIDPrinter);
+      id1.print();
+      id2.print();
+      id3.print();
+      id4.print();
+      id5.print();
+
+      trace('*** NEW SCOPE ***');
+
+      var scope = provider.newScope();
+      var id1 = scope.getService(SingletonIDPrinter);
+      var id2 = scope.getService(TransientIDPrinter);
+      var id3 = scope.getService(TransientIDPrinter);
+      var id4 = scope.getService(ScopedIDPrinter);
+      var id5 = scope.getService(ScopedIDPrinter);
+      id1.print();
+      id2.print();
+      id3.print();
+      id4.print();
+      id5.print();
+    }
   }
