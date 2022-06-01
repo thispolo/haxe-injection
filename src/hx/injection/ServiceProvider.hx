@@ -23,16 +23,18 @@ package hx.injection;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-class ServiceProvider {
+final class ServiceProvider {
 	private var _requestedConfigs:Map<String, Any>;
 	private var _requestedServices:Map<String, ServiceType>;
 
-	private var _services:Map<String, Service>;
+	private var _singletons : Map<String, Service>;
+	private var _scopes : Map<String, Service>;
 
 	public function new(configs:Map<String, Any>, services:Map<String, ServiceType>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
-		_services = new Map();
+		_singletons = new Map();
+		_scopes = new Map();
 	}
 
 	/**
@@ -50,27 +52,46 @@ class ServiceProvider {
 		return Std.downcast(implementation, service);
 	}
 
+	/**
+		Create a new scope on the provider.
+	**/
+	public function newScope() : ServiceProvider {
+		_scopes = new Map();
+		return this;
+	}
+
 	private function handleServiceRequest(serviceName:String, service:ServiceType):Service {
 		switch (service) {
 			case Singleton(service):
 				return handleSingletonService(serviceName, service);
 			case Transient(service):
 				return handleTransientService(serviceName, service);
+			case Scoped(service):
+				return handleScopedService(serviceName, service);
 			default:
 		}
 	}
 
 	private function handleSingletonService(serviceName:String, service:String):Service {
-		var instance = getHandled(serviceName);
+		var instance = getSingleton(serviceName);
 		if (instance == null) {
 			instance = buildDependencyTree(service);
-			_services.set(serviceName, instance);
+			_singletons.set(serviceName, instance);
 		}
 		return instance;
 	}
 
 	private function handleTransientService(serviceName:String, service:String):Service {
 		return buildDependencyTree(service);
+	}
+
+	private function handleScopedService(serviceName:String, service:String):Service {
+		var instance = getScoped(serviceName);
+		if (instance == null) {
+			instance = buildDependencyTree(service);
+			_scopes.set(serviceName, instance);
+		}
+		return instance;
 	}
 
 	private function buildDependencyTree(service:String):Service {
@@ -102,8 +123,12 @@ class ServiceProvider {
 		return instance.getConstructorArgs();
 	}
 
-	private function getHandled(serviceName:String):Service {
-		return _services.get(serviceName);
+	private function getSingleton(serviceName:String):Service {
+		return _singletons.get(serviceName);
+	}
+
+	private function getScoped(serviceName:String):Service {
+		return _scopes.get(serviceName);
 	}
 
 	private function getRequestedConfig(config:String):Any {
