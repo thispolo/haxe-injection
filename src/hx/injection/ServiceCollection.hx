@@ -85,6 +85,28 @@ class ServiceCollection {
 	}
 
 	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceCollection {
+		var serviceName = Type.getClassName(service);
+		var implementationName = ServiceType.Scoped(Type.getClassName(implementation));
+		_requestedServices.set(serviceName, implementationName);
+
+		return this;
+	}
+
+	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>):ServiceCollection {
+		var serviceName = Type.getClassName(service);
+		var implementationName = ServiceType.Scoped(Type.getClassName(service));
+		_requestedServices.set(serviceName, implementationName);
+
+		return this;
+	}
+
+	/**
 		Create the service provider to use the defined service collection in order to generate concrete implementations of services.
 	**/
 	public function createProvider():ServiceProvider {
