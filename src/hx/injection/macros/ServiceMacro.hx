@@ -23,10 +23,12 @@ package hx.injection.macros;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
+import haxe.ds.StringMap;
+#if macro
+
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
-#if macro
 class ServiceMacro {
 	public static function build() {
 		var fields = Context.getBuildFields();
@@ -47,6 +49,21 @@ class ServiceMacro {
 		for (field in fields) {
 			if (field.name == "new") {
 				var pos = field.pos;
+				var metas = field.meta;
+
+				var names = new StringMap();
+				if(metas != null) {
+					for(meta in metas) {
+						if(meta.name.toUpperCase() == ':NAMED') {
+							switch([meta.params[0].expr, meta.params[1].expr]) {
+								case [EConst(CString(s1)), EConst(CString(s2))]:
+									names.set(s2, s1);
+								default:
+							}
+						}
+					}
+				}
+
 				switch (field.kind) {
 					case FFun(f):
 						for (arg in f.args) {
@@ -58,14 +75,16 @@ class ServiceMacro {
 											throw "Service Builder: Recursive parameter definition.";
 										}
 									}
-									constructorArgs.push(t.toString());
+									var argName = names.get(arg.name);
+									var serviceName = argName != null? '@' + argName : '@DefaultService';
+									constructorArgs.push('${t.toString()}${serviceName}');
 								default:
 									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
 							}
 						}
 					default:
 				}
-				
+				trace(constructorArgs);
 				var isSubclass = (classType.superClass != null);
 				var access = [Access.APrivate];
 				if(isSubclass) {
@@ -75,7 +94,7 @@ class ServiceMacro {
 				var newField = {
 					name: funcName,
 					access: access,
-					kind: FFun({args: [], ret: macro:Array<String>, expr: macro return $v{constructorArgs}}),
+					kind: FFun({args: [], ret: macro: Array<String>, expr: macro return $v{constructorArgs}}),
 					pos: Context.currentPos(),
 				}
 				fields.push(newField);
