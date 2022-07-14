@@ -33,9 +33,15 @@ class ServiceMacro {
 		var classType = Context.getLocalClass().get();
 		var interfaces = classType.interfaces;
 
+		var funcName = "getConstructorArgs";
+
 		if (classType.isInterface) {
 			return fields;
 		}
+
+		for (field in fields)
+			if (field.name == funcName)
+				return fields;
 
 		var constructorArgs = [];
 		for (field in fields) {
@@ -59,7 +65,7 @@ class ServiceMacro {
 						}
 					default:
 				}
-
+				
 				var isSubclass = (classType.superClass != null);
 				var access = [Access.APrivate];
 				if(isSubclass) {
@@ -67,13 +73,13 @@ class ServiceMacro {
 				}
 
 				var newField = {
-					name: "getConstructorArgs",
+					name: funcName,
 					access: access,
 					kind: FFun({args: [], ret: macro:Array<String>, expr: macro return $v{constructorArgs}}),
 					pos: Context.currentPos(),
 				}
 				fields.push(newField);
-				break;
+				//break;
 			}
 		}
 		return fields;

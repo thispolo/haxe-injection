@@ -44,10 +44,10 @@ final class ServiceProvider {
 		var serviceName = Type.getClassName(service);
 		var requestedService = _requestedServices.get(serviceName);
 		if (requestedService == null) {
-			throw new haxe.Exception("Service of type " + service + " not found.");
+			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
 		}
 
-		var implementation = handleServiceRequest(serviceName, requestedService);
+		var implementation = handleServiceRequest(requestedService);
 
 		return Std.downcast(implementation, service);
 	}
@@ -60,36 +60,36 @@ final class ServiceProvider {
 		return this;
 	}
 
-	private function handleServiceRequest(serviceName:String, service:ServiceType):Service {
-		switch (service) {
-			case Singleton(service):
-				return handleSingletonService(serviceName, service);
-			case Transient(service):
-				return handleTransientService(serviceName, service);
-			case Scoped(service):
-				return handleScopedService(serviceName, service);
+	private function handleServiceRequest(serviceType:ServiceType):Service {
+		switch (serviceType) {
+			case Singleton(implementation):
+				return handleSingletonService(implementation);
+			case Transient(implementation):
+				return handleTransientService(implementation);
+			case Scoped(implementation):
+				return handleScopedService(implementation);
 			default:
 		}
 	}
 
-	private function handleSingletonService(serviceName:String, service:String):Service {
-		var instance = getSingleton(serviceName);
+	private function handleSingletonService(implementation:String):Service {
+		var instance = getSingleton(implementation);
 		if (instance == null) {
-			instance = buildDependencyTree(service);
-			_singletons.set(serviceName, instance);
+			instance = buildDependencyTree(implementation);
+			_singletons.set(implementation, instance);
 		}
 		return instance;
 	}
 
-	private function handleTransientService(serviceName:String, service:String):Service {
-		return buildDependencyTree(service);
+	private function handleTransientService(implementation:String):Service {
+		return buildDependencyTree(implementation);
 	}
 
-	private function handleScopedService(serviceName:String, service:String):Service {
-		var instance = getScoped(serviceName);
+	private function handleScopedService(implementation:String):Service {
+		var instance = getScoped(implementation);
 		if (instance == null) {
-			instance = buildDependencyTree(service);
-			_scopes.set(serviceName, instance);
+			instance = buildDependencyTree(implementation);
+			_scopes.set(implementation, instance);
 		}
 		return instance;
 	}
@@ -100,7 +100,7 @@ final class ServiceProvider {
 		for (arg in args) {
 			var dependency = getRequestedService(arg);
 			if (dependency != null) {
-				var serviceInstance = handleServiceRequest(arg, dependency);
+				var serviceInstance = handleServiceRequest(dependency);
 				dependencies.push(serviceInstance);
 				continue;
 			}
