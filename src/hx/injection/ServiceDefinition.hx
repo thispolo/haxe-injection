@@ -8,7 +8,7 @@ final class ServiceDefinition implements ServiceMetadata implements ServiceGroup
     private var _types : StringMap<ServiceType>;
 
     public function new() {
-        _types = new Map();
+        _types = new StringMap();
     }
 
     public function asKey(key : String) : Void {
@@ -22,7 +22,7 @@ final class ServiceDefinition implements ServiceMetadata implements ServiceGroup
 
     public function finalise() : Void {
         if(_current != null)
-            _types.set('@DefaultService', _current);
+            _types.set(ServiceProvider.DefaultType, _current);
     }
 
     public function getServiceTypes() : StringMap<ServiceType> {

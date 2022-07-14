@@ -1,5 +1,7 @@
 package hx.injection;
 
+import haxe.ds.StringMap;
+
 /*
 	MIT License
 
@@ -25,12 +27,13 @@ package hx.injection;
  */
 
 class ServiceCollection {
-	private var _configs:Map<String, Any>;
-	private var _requestedServices:Map<String, ServiceType>;
+
+	private var _configs : StringMap<Any>;
+	private var _requestedServices : StringMap<ServiceDefinition>;
 
 	public function new() {
-		_configs = new Map();
-		_requestedServices = new Map();
+		_configs = new StringMap();
+		_requestedServices = new StringMap();
 	}
 
 	/**
@@ -43,10 +46,14 @@ class ServiceCollection {
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
+	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>) : ServiceMetadata {
 		var serviceName = Type.getClassName(service);
-		var implementationName = ServiceType.Singleton(Type.getClassName(implementation));
-		_requestedServices.set(serviceName, implementationName);
+		var implementationType = ServiceType.Singleton(Type.getClassName(implementation));
+		var definition = initialiseDefinition(serviceName);
+
+		definition.setCurrent(implementationType);
+
+		return definition;
 	}
 
 	/**
@@ -55,7 +62,7 @@ class ServiceCollection {
 	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Singleton(Type.getClassName(service));
-		_requestedServices.set(serviceName, implementationName);
+		//_requestedServices.set(serviceName, implementationName);
 	}
 
 	/**
@@ -64,7 +71,7 @@ class ServiceCollection {
 	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Transient(Type.getClassName(implementation));
-		_requestedServices.set(serviceName, implementationName);
+		//_requestedServices.set(serviceName, implementationName);
 	}
 
 	/**
@@ -73,7 +80,7 @@ class ServiceCollection {
 	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Transient(Type.getClassName(service));
-		_requestedServices.set(serviceName, implementationName);
+		//_requestedServices.set(serviceName, implementationName);
 	}
 
 	/**
@@ -82,7 +89,7 @@ class ServiceCollection {
 	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Scoped(Type.getClassName(implementation));
-		_requestedServices.set(serviceName, implementationName);
+		//_requestedServices.set(serviceName, implementationName);
 	}
 
 	/**
@@ -91,20 +98,33 @@ class ServiceCollection {
 	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Scoped(Type.getClassName(service));
-		_requestedServices.set(serviceName, implementationName);
+		//_requestedServices.set(serviceName, implementationName);
 	}
 
 	/**
 		Create the service provider to use the defined service collection in order to generate concrete implementations of services.
 	**/
 	public function createProvider():ServiceProvider {
-		var provider = new ServiceProvider(_configs, _requestedServices);
+		for(service in _requestedServices) {
+			service.finalise();
+		}
+		
+		var provider = new ServiceProvider(_configs, cast _requestedServices);
 
 		return provider;
 	}
 
 	private function configExists(arg:String):Bool {
 		return _configs.get(arg) != null;
+	}
+
+	private function initialiseDefinition(type:String) : ServiceDefinition {
+		var definition = _requestedServices.get(type);
+		if(definition == null) {
+			definition = new ServiceDefinition();
+			_requestedServices.set(type, definition);
+		}
+		return definition;
 	}
 
 	public function toString():String {

@@ -1,5 +1,7 @@
 package hx.injection;
 
+import haxe.ds.StringMap;
+
 /*
 	MIT License
 
@@ -24,17 +26,17 @@ package hx.injection;
 	SOFTWARE.
  */
 final class ServiceProvider {
-	private var _requestedConfigs:Map<String, Any>;
-	private var _requestedServices:Map<String, ServiceType>;
+	private var _requestedConfigs:StringMap<Any>;
+	private var _requestedServices:StringMap<ServiceGroup>;
 
-	private var _singletons : Map<String, Service>;
-	private var _scopes : Map<String, Service>;
+	private var _singletons : StringMap<Service>;
+	private var _scopes : StringMap<Service>;
 
-	public function new(configs:Map<String, Any>, services:Map<String, ServiceType>) {
+	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
-		_singletons = new Map();
-		_scopes = new Map();
+		_singletons = new StringMap();
+		_scopes = new StringMap();
 	}
 
 	/**
@@ -42,7 +44,8 @@ final class ServiceProvider {
 	**/
 	public function getService<S:Service>(service:Class<S>):S {
 		var serviceName = Type.getClassName(service);
-		var requestedService = _requestedServices.get(serviceName);
+		var requestedGroup = _requestedServices.get(serviceName);
+		var requestedService = requestedGroup.getServiceTypes().get(ServiceProvider.DefaultType);
 		if (requestedService == null) {
 			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
 		}
@@ -56,7 +59,7 @@ final class ServiceProvider {
 		Create a new scope on the provider.
 	**/
 	public function newScope() : ServiceProvider {
-		_scopes = new Map();
+		_scopes = new StringMap();
 		return this;
 	}
 
@@ -136,6 +139,12 @@ final class ServiceProvider {
 	}
 
 	private function getRequestedService(serviceName:String):ServiceType {
-		return _requestedServices.get(serviceName);
+		var requested = _requestedServices.get(serviceName);
+		if(requested != null) {
+			return requested.getServiceTypes().get(ServiceProvider.DefaultType);
+		}
+		return null;
 	}
+
+	public static inline var DefaultType : String = '@DefaultService';
 }
