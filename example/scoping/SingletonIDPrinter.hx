@@ -1,8 +1,8 @@
-package example;
+package example.scoping;
 
 import hx.injection.Service;
 
-final class ScopedIDPrinter implements Service {
+final class SingletonIDPrinter implements Service {
 
     private var _id : Int;
 
@@ -10,7 +10,7 @@ final class ScopedIDPrinter implements Service {
         _id = Math.round(Math.random()*12345678);
     }
 
-    public function print() {
-        trace(_id);
+    public function id() {
+        return _id;
     }
 }

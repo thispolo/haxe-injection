@@ -1,6 +1,7 @@
 package example;
 
 import example.segregation.*;
+import example.scoping.*;
 import hx.injection.*;
 
 using example.TestExtensions;
@@ -9,16 +10,16 @@ class Main {
 
     static public function main() : Void {
       // Example 1:
-      //test1();
+      test1();
       
       // Example 2:
-      //test2();
+      test2();
       
       // Example 3:
-      //test3();
+      test3();
       
       // Example 4:
-      //test4();
+      test4();
 
       // Example 5:
       test5();
@@ -70,46 +71,35 @@ class Main {
       collection.addSingleton(SingletonIDPrinter);
       collection.addTransient(TransientIDPrinter);
       collection.addScoped(ScopedIDPrinter);
+      collection.addTransient(DependentService);
       
       trace('*** NEW SCOPE ***');
 
       var provider = collection.createProvider();
-      var id1 = provider.getService(SingletonIDPrinter);
-      var id2 = provider.getService(TransientIDPrinter);
-      var id3 = provider.getService(TransientIDPrinter);
-      var id4 = provider.getService(ScopedIDPrinter);
-      var id5 = provider.getService(ScopedIDPrinter);
+      var id1 = provider.getService(DependentService);
       id1.print();
+      var id2 = provider.getService(DependentService);
       id2.print();
-      id3.print();
-      id4.print();
-      id5.print();
 
       trace('*** NEW SCOPE ***');
 
       var scope = provider.newScope();
-      var id1 = scope.getService(SingletonIDPrinter);
-      var id2 = scope.getService(TransientIDPrinter);
-      var id3 = scope.getService(TransientIDPrinter);
-      var id4 = scope.getService(ScopedIDPrinter);
-      var id5 = scope.getService(ScopedIDPrinter);
+      var id1 = scope.getService(DependentService);
       id1.print();
+      var id2 = provider.getService(DependentService);
       id2.print();
-      id3.print();
-      id4.print();
-      id5.print();
     }
     
     private static function test5() : Void {
       var collection = new ServiceCollection();
       collection.addSingleton(TextService, ExampleService);
       collection.addSingleton(NumberService, ExampleService);
+      collection.addSingleton(RecieverService);
       var provider = collection.createProvider();
 
-      var serv1 = provider.getService(TextService);
-      var serv2 = provider.getService(NumberService);
+      var serv1 = provider.getService(RecieverService);
 
-      trace(serv1.id(), serv2.id());
+      serv1.print();
     }
 
   }
