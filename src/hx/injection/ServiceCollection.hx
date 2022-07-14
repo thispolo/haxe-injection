@@ -43,67 +43,55 @@ class ServiceCollection {
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceCollection {
+	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Singleton(Type.getClassName(implementation));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>):ServiceCollection {
+	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Singleton(Type.getClassName(service));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
-	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceCollection {
+	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Transient(Type.getClassName(implementation));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
-	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>):ServiceCollection {
+	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Transient(Type.getClassName(service));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
-	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceCollection {
+	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Scoped(Type.getClassName(implementation));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
-	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>):ServiceCollection {
+	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>):Void {
 		var serviceName = Type.getClassName(service);
 		var implementationName = ServiceType.Scoped(Type.getClassName(service));
 		_requestedServices.set(serviceName, implementationName);
-
-		return this;
 	}
 
 	/**
