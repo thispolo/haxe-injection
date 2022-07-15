@@ -1,5 +1,8 @@
 package example;
 
+import example.binding.SecondChainDependency;
+import example.binding.FirstChainDependency;
+import example.binding.ChainedDependency;
 import example.segregation.*;
 import example.scoping.*;
 import hx.injection.*;
@@ -51,15 +54,11 @@ class Main {
 
     private static function test3() : Void {
       var collection = new ServiceCollection();
-      collection.addSingleton(LoggingService);
-      collection.addTransient(AnotherService);
-      collection.addTransient(TestService, LouderTestService);
-      collection.addConfig(new TestConfig());
-      
-      var provider = collection.createProvider();
-      sayWord(provider.getTest());
+      collection.addSingleton(ChainedDependency, FirstChainDependency, 'First');
+      collection.addSingleton(ChainedDependency, SecondChainDependency);
 
-      trace(provider.getService(TestService) != provider.getService(TestService));
+      var provider = collection.createProvider();
+      provider.getService(ChainedDependency).doThing();
     }
 
     private static function sayWord(service : TestService) : Void {
