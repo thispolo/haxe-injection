@@ -1,5 +1,6 @@
 package hx.injection;
 
+import hx.injection.Disposable.Destructable;
 import haxe.ds.StringMap;
 
 /*
@@ -25,7 +26,7 @@ import haxe.ds.StringMap;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-final class ServiceProvider {
+final class ServiceProvider implements Destructable {
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
 
@@ -60,6 +61,11 @@ final class ServiceProvider {
 		Create a new scope on the provider.
 	**/
 	public function newScope() : ServiceProvider {
+		for(scope in _scopes) {
+			if(Std.isOfType(scope, Destructable)) {
+				cast(scope, Destructable).destroy();
+			}
+		}
 		_scopes = new StringMap();
 		return this;
 	}
@@ -150,5 +156,14 @@ final class ServiceProvider {
 		return null;
 	}
 
+	public function destroy() : Void {
+		for(singleton in _singletons) {
+			if(Std.isOfType(singleton, Destructable)) {
+				cast(singleton, Destructable).destroy();
+			}
+		}
+	}
+
 	public static inline var DefaultType : String = '';
+
 }
