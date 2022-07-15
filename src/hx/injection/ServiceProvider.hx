@@ -42,10 +42,11 @@ final class ServiceProvider {
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>):S {
+	public function getService<S:Service>(service:Class<S>, ?key : Null<String>):S {
+		var key = key == null?ServiceProvider.DefaultType:key;
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
-		var requestedService = requestedGroup.getServiceTypes().get(ServiceProvider.DefaultType);
+		var requestedService = requestedGroup.getServiceTypes().get(key);
 		if (requestedService == null) {
 			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
 		}
@@ -139,12 +140,15 @@ final class ServiceProvider {
 	}
 
 	private function getRequestedService(serviceName:String):ServiceType {
+		var serviceDefinition = serviceName.split('|');
+		var serviceName = serviceDefinition[0];
+		var key = (serviceDefinition[1] != null) ? serviceDefinition[1] : ServiceProvider.DefaultType;
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
-			return requested.getServiceTypes().get(ServiceProvider.DefaultType);
+			return requested.getServiceTypes().get(key);
 		}
 		return null;
 	}
 
-	public static inline var DefaultType : String = '@DefaultService';
+	public static inline var DefaultType : String = '';
 }

@@ -46,14 +46,12 @@ class ServiceCollection {
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>) : ServiceMetadata {
+	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>) : Void {
 		var serviceName = Type.getClassName(service);
 		var implementationType = ServiceType.Singleton(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
-		definition.setCurrent(implementationType);
-
-		return definition;
+		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
 	}
 
 	/**
@@ -105,10 +103,6 @@ class ServiceCollection {
 		Create the service provider to use the defined service collection in order to generate concrete implementations of services.
 	**/
 	public function createProvider():ServiceProvider {
-		for(service in _requestedServices) {
-			service.finalise();
-		}
-		
 		var provider = new ServiceProvider(_configs, cast _requestedServices);
 
 		return provider;

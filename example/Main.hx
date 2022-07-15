@@ -50,6 +50,7 @@ class Main {
     }
 
     private static function test3() : Void {
+      /*
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService);
       collection.addTransient(AnotherService);
@@ -60,6 +61,7 @@ class Main {
       sayWord(provider.getTest());
 
       trace(provider.getService(TestService) != provider.getService(TestService));
+      */
     }
 
     private static function sayWord(service : TestService) : Void {

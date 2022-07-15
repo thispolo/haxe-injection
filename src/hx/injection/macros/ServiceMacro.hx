@@ -57,30 +57,42 @@ class ServiceMacro {
 						if(meta.name.toUpperCase() == ':NAMED') {
 							switch([meta.params[0].expr, meta.params[1].expr]) {
 								case [EConst(CString(s1)), EConst(CString(s2))]:
-									names.set(s2, s1);
+									names.set(s1, s2);
 								default:
 							}
 						}
 					}
 				}
+				
+				// for (int in interfaces) {
+				// 	if (int.t.toString() == t.toString()) {
+				// 		throw "Service Builder: Recursive parameter definition.";
+				// 	}
+				// }
 
+				trace(names);
 				switch (field.kind) {
 					case FFun(f):
+						var argNum = 1;
 						for (arg in f.args) {
 							var type = Context.resolveType(arg.type, pos);
 							switch (type) {
 								case TInst(t, params):
-									for (int in interfaces) {
-										if (int.t.toString() == t.toString()) {
-											throw "Service Builder: Recursive parameter definition.";
+									var argName = names.get(arg.name);
+									if(argName == null) {
+										for (int in interfaces) {
+											if (int.t.toString() == t.toString()) {
+												throw 'Service: Argument ${argNum} of type \'${t.toString()}\' in ${classType.name} is recursive.';
+											}
 										}
 									}
-									var argName = names.get(arg.name);
-									var serviceName = argName != null? '@' + argName : '@DefaultService';
+
+									var serviceName = argName != null? '|' + argName : '';
 									constructorArgs.push('${t.toString()}${serviceName}');
 								default:
 									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
 							}
+							argNum++;
 						}
 					default:
 				}
