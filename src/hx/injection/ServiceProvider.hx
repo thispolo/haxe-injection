@@ -61,11 +61,7 @@ final class ServiceProvider implements Destructable {
 		Create a new scope on the provider.
 	**/
 	public function newScope() : ServiceProvider {
-		for(scope in _scopes) {
-			if(Std.isOfType(scope, Destructable)) {
-				cast(scope, Destructable).destroy();
-			}
-		}
+		destroyScopes();
 		_scopes = new StringMap();
 		return this;
 	}
@@ -157,16 +153,29 @@ final class ServiceProvider implements Destructable {
 	}
 
 	public function destroy() : Void {
+		destroyScopes();
+		destroySingletons();
+
+		_requestedConfigs = null;
+		_requestedServices = null;
+		_singletons = null;
+		_scopes = null;
+	}
+
+	private function destroySingletons() : Void {
 		for(singleton in _singletons) {
 			if(Std.isOfType(singleton, Destructable)) {
 				cast(singleton, Destructable).destroy();
 			}
 		}
-		
-		_requestedConfigs = null;
-		_requestedServices = null;
-		_singletons = null;
-		_scopes = null;
+	}
+
+	private function destroyScopes() : Void {
+		for(scope in _scopes) {
+			if(Std.isOfType(scope, Destructable)) {
+				cast(scope, Destructable).destroy();
+			}
+		}
 	}
 
 	public static inline var DefaultType : String = '';
