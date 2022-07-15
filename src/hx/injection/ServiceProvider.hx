@@ -162,6 +162,11 @@ final class ServiceProvider implements Destructable {
 				cast(singleton, Destructable).destroy();
 			}
 		}
+		
+		_requestedConfigs = null;
+		_requestedServices = null;
+		_singletons = null;
+		_scopes = null;
 	}
 
 	public static inline var DefaultType : String = '';
