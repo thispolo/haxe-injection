@@ -27,17 +27,18 @@ import haxe.ds.StringMap;
 	SOFTWARE.
  */
 final class ServiceProvider implements Destructable {
+
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
 
-	private var _singletons : StringMap<Service>;
-	private var _scopes : StringMap<Service>;
+	private var _resolvedSingletons : StringMap<Service>;
+	private var _resolvedScopes : StringMap<Service>;
 
 	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
-		_singletons = new StringMap();
-		_scopes = new StringMap();
+		_resolvedSingletons = new StringMap();
+		_resolvedScopes = new StringMap();
 	}
 
 	/**
@@ -62,7 +63,7 @@ final class ServiceProvider implements Destructable {
 	**/
 	public function newScope() : ServiceProvider {
 		destroyScopes();
-		_scopes = new StringMap();
+		_resolvedScopes = new StringMap();
 		return this;
 	}
 
@@ -82,7 +83,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getSingleton(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
-			_singletons.set(implementation, instance);
+			_resolvedSingletons.set(implementation, instance);
 		}
 		return instance;
 	}
@@ -95,7 +96,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getScoped(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
-			_scopes.set(implementation, instance);
+			_resolvedScopes.set(implementation, instance);
 		}
 		return instance;
 	}
@@ -130,11 +131,11 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function getSingleton(serviceName:String):Service {
-		return _singletons.get(serviceName);
+		return _resolvedSingletons.get(serviceName);
 	}
 
 	private function getScoped(serviceName:String):Service {
-		return _scopes.get(serviceName);
+		return _resolvedScopes.get(serviceName);
 	}
 
 	private function getRequestedConfig(config:String):Any {
@@ -158,12 +159,12 @@ final class ServiceProvider implements Destructable {
 
 		_requestedConfigs = null;
 		_requestedServices = null;
-		_singletons = null;
-		_scopes = null;
+		_resolvedSingletons = null;
+		_resolvedScopes = null;
 	}
 
 	private function destroySingletons() : Void {
-		for(singleton in _singletons) {
+		for(singleton in _resolvedSingletons) {
 			if(Std.isOfType(singleton, Destructable)) {
 				cast(singleton, Destructable).destroy();
 			}
@@ -171,7 +172,7 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function destroyScopes() : Void {
-		for(scope in _scopes) {
+		for(scope in _resolvedScopes) {
 			if(Std.isOfType(scope, Destructable)) {
 				cast(scope, Destructable).destroy();
 			}
