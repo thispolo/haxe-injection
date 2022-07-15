@@ -50,18 +50,7 @@ class Main {
     }
 
     private static function test3() : Void {
-      /*
-      var collection = new ServiceCollection();
-      collection.addSingleton(LoggingService);
-      collection.addTransient(AnotherService);
-      collection.addTransient(TestService, LouderTestService);
-      collection.addConfig(new TestConfig());
       
-      var provider = collection.createProvider();
-      sayWord(provider.getTest());
-
-      trace(provider.getService(TestService) != provider.getService(TestService));
-      */
     }
 
     private static function sayWord(service : TestService) : Void {
