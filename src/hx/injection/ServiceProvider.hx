@@ -1,6 +1,6 @@
 package hx.injection;
 
-import hx.injection.Disposable.Destructable;
+import hx.injection.Destructable;
 import haxe.ds.StringMap;
 
 /*
