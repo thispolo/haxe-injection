@@ -8,7 +8,7 @@
    ],
    "description": "A straight-to-the-point dependency injection container for Haxe",
    "contributors": ["thispolo"],
-   "releasenote": "Second version; everything is working correctly. Supports Singleton, Transient, and Scoped services with configurations.",
+   "releasenote": "See https://github.com/thispolo/haxe-injection/blob/main/CHANGELOG.md",
    "version": "2.0.0",
    "dependencies": { }
 }
