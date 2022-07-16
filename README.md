@@ -179,7 +179,7 @@ class MyOtherService implements SomeService {
     public function new(firstService : SomeService) {}
 }
 
-// Will fail:
+// Will WORK:
 var collection = new ServiceCollection();
 collection.addSingleton(SomeService, MyFirstService, 'firstService')
 collection.addSingleton(SomeService, MyOtherService)
