@@ -1,5 +1,7 @@
 package example;
 
+import example.destructable.ADestructableService;
+import example.destructable.DestructableService;
 import example.binding.SecondChainDependency;
 import example.binding.FirstChainDependency;
 import example.binding.ChainedDependency;
@@ -12,20 +14,12 @@ using example.TestExtensions;
 class Main {
 
     static public function main() : Void {
-      // Example 1:
       test1();
-      
-      // Example 2:
       test2();
-      
-      // Example 3:
       test3();
-      
-      // Example 4:
       test4();
-
-      // Example 5:
       test5();
+      test6();
     }
 
     private static function test1() : Void {
@@ -101,4 +95,16 @@ class Main {
       serv1.print();
     }
 
+    
+    private static function test6() : Void {
+      var collection = new ServiceCollection();
+      collection.addSingleton(DestructableService, ADestructableService);
+      var provider = collection.createProvider();
+
+      var serv1 = provider.getService(DestructableService);
+
+      serv1.createMeme();
+
+      provider.destroy();
+    }
   }

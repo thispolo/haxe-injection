@@ -47,63 +47,47 @@ class ServiceCollection {
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
 	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>) : Void {
-		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Singleton(Type.getClassName(implementation));
-		var definition = initialiseDefinition(serviceName);
-
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Singleton(name)));
 	}
 
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
 	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
-		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Singleton(Type.getClassName(service));
-		var definition = initialiseDefinition(serviceName);
-
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Singleton(name)));
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
 	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>):Void {
-		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Transient(Type.getClassName(implementation));
-		var definition = initialiseDefinition(serviceName);
-
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Transient(name)));
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
 	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
-		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Transient(Type.getClassName(service));
-		var definition = initialiseDefinition(serviceName);
-
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Transient(name)));
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
 	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>):Void {
-		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Scoped(Type.getClassName(implementation));
-		var definition = initialiseDefinition(serviceName);
-
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Scoped(name)));
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
 	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
+		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Scoped(name)));
+	}
+
+	private function handleServiceAdd<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>, type : String -> ServiceType):Void {
 		var serviceName = Type.getClassName(service);
-		var implementationType = ServiceType.Scoped(Type.getClassName(service));
+		var implementationType = type(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
 		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
@@ -129,13 +113,5 @@ class ServiceCollection {
 			_requestedServices.set(type, definition);
 		}
 		return definition;
-	}
-
-	public function toString():String {
-		var string = "\nApplication services:- \n";
-		for (service in _requestedServices) {
-			string += "\t" + service + "\n";
-		}
-		return string;
 	}
 }
