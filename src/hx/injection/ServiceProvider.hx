@@ -1,5 +1,8 @@
 package hx.injection;
 
+import hx.injection.Destructable;
+import haxe.ds.StringMap;
+
 /*
 	MIT License
 
@@ -23,54 +26,79 @@ package hx.injection;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-class ServiceProvider {
-	private var _requestedConfigs:Map<String, Any>;
-	private var _requestedServices:Map<String, ServiceType>;
+final class ServiceProvider implements Destructable {
 
-	private var _services:Map<String, Service>;
+	private var _requestedConfigs:StringMap<Any>;
+	private var _requestedServices:StringMap<ServiceGroup>;
 
-	public function new(configs:Map<String, Any>, services:Map<String, ServiceType>) {
+	private var _resolvedSingletons : StringMap<Service>;
+	private var _resolvedScopes : StringMap<Service>;
+
+	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
-		_services = new Map();
+		_resolvedSingletons = new StringMap();
+		_resolvedScopes = new StringMap();
 	}
 
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>):S {
+	public function getService<S:Service>(service:Class<S>, ?key : Null<String>):S {
+		var key = key == null?ServiceProvider.DefaultType:key;
 		var serviceName = Type.getClassName(service);
-		var requestedService = _requestedServices.get(serviceName);
+		var requestedGroup = _requestedServices.get(serviceName);
+		var requestedService = requestedGroup.getServiceTypes().get(key);
 		if (requestedService == null) {
-			throw new haxe.Exception("Service of type " + service + " not found.");
+			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
 		}
 
-		var implementation = handleServiceRequest(serviceName, requestedService);
+		var implementation = handleServiceRequest(requestedService);
 
 		return Std.downcast(implementation, service);
 	}
 
-	private function handleServiceRequest(serviceName:String, service:ServiceType):Service {
-		switch (service) {
-			case Singleton(service):
-				return handleSingletonService(serviceName, service);
-			case Transient(service):
-				return handleTransientService(serviceName, service);
+	/**
+		Create a new scope on the provider.
+	**/
+	public function newScope() : ServiceProvider {
+		destroyScopes();
+		_resolvedScopes = new StringMap();
+		return this;
+	}
+
+	private function handleServiceRequest(serviceType:ServiceType):Service {
+		switch (serviceType) {
+			case Singleton(implementation):
+				return handleSingletonService(implementation);
+			case Transient(implementation):
+				return handleTransientService(implementation);
+			case Scoped(implementation):
+				return handleScopedService(implementation);
 			default:
 		}
 	}
 
-	private function handleSingletonService(serviceName:String, service:String):Service {
-		var instance = getHandled(serviceName);
+	private function handleSingletonService(implementation:String):Service {
+		var instance = getSingleton(implementation);
 		if (instance == null) {
-			instance = buildDependencyTree(service);
-			_services.set(serviceName, instance);
+			instance = buildDependencyTree(implementation);
+			_resolvedSingletons.set(implementation, instance);
 		}
 		return instance;
 	}
 
-	private function handleTransientService(serviceName:String, service:String):Service {
-		return buildDependencyTree(service);
+	private function handleTransientService(implementation:String):Service {
+		return buildDependencyTree(implementation);
+	}
+
+	private function handleScopedService(implementation:String):Service {
+		var instance = getScoped(implementation);
+		if (instance == null) {
+			instance = buildDependencyTree(implementation);
+			_resolvedScopes.set(implementation, instance);
+		}
+		return instance;
 	}
 
 	private function buildDependencyTree(service:String):Service {
@@ -79,7 +107,7 @@ class ServiceProvider {
 		for (arg in args) {
 			var dependency = getRequestedService(arg);
 			if (dependency != null) {
-				var serviceInstance = handleServiceRequest(arg, dependency);
+				var serviceInstance = handleServiceRequest(dependency);
 				dependencies.push(serviceInstance);
 				continue;
 			}
@@ -102,8 +130,12 @@ class ServiceProvider {
 		return instance.getConstructorArgs();
 	}
 
-	private function getHandled(serviceName:String):Service {
-		return _services.get(serviceName);
+	private function getSingleton(serviceName:String):Service {
+		return _resolvedSingletons.get(serviceName);
+	}
+
+	private function getScoped(serviceName:String):Service {
+		return _resolvedScopes.get(serviceName);
 	}
 
 	private function getRequestedConfig(config:String):Any {
@@ -111,6 +143,42 @@ class ServiceProvider {
 	}
 
 	private function getRequestedService(serviceName:String):ServiceType {
-		return _requestedServices.get(serviceName);
+		var serviceDefinition = serviceName.split('|');
+		var serviceName = serviceDefinition[0];
+		var key = (serviceDefinition[1] != null) ? serviceDefinition[1] : ServiceProvider.DefaultType;
+		var requested = _requestedServices.get(serviceName);
+		if(requested != null) {
+			return requested.getServiceTypes().get(key);
+		}
+		return null;
 	}
+
+	public function destroy() : Void {
+		destroyScopes();
+		destroySingletons();
+
+		_requestedConfigs = null;
+		_requestedServices = null;
+		_resolvedSingletons = null;
+		_resolvedScopes = null;
+	}
+
+	private function destroySingletons() : Void {
+		for(singleton in _resolvedSingletons) {
+			if(Std.isOfType(singleton, Destructable)) {
+				cast(singleton, Destructable).destroy();
+			}
+		}
+	}
+
+	private function destroyScopes() : Void {
+		for(scope in _resolvedScopes) {
+			if(Std.isOfType(scope, Destructable)) {
+				cast(scope, Destructable).destroy();
+			}
+		}
+	}
+
+	public static inline var DefaultType : String = '';
+
 }
