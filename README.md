@@ -201,3 +201,4 @@ will have `Destroy()` called when the provider goes out of scope or is itself de
 ## Future features
 - Allow for instancing services during assignment to the collection
 - Allow for optionally adding services using callbacks to for setting optional arguments
+- Improve binding convention to removal reliance on strings
