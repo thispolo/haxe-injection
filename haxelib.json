@@ -4,11 +4,11 @@
    "license": "MIT",
    "classPath": "src/",
    "tags": [
-      "utility", "cross"
+      "utility", "cross", "injection", "dependency", "IoC", "DI"
    ],
-   "description": "A straight to the point .NET-style dependency injection library for Haxe",
-   "contributors": ["PaulSGCross"],
-   "releasenote": "First version; everything is working correctly. Supports Singleton and Transient services with configurations.",
-   "version": "1.0.0",
+   "description": "A straight-to-the-point dependency injection container for Haxe",
+   "contributors": ["thispolo"],
+   "releasenote": "Second version; everything is working correctly. Supports Singleton, Transient, and Scoped services with configurations.",
+   "version": "2.0.0",
    "dependencies": { }
 }
