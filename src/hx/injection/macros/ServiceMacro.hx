@@ -96,7 +96,7 @@ class ServiceMacro {
 						}
 					default:
 				}
-				trace(constructorArgs);
+				
 				var isSubclass = (classType.superClass != null);
 				var access = [Access.APrivate];
 				if(isSubclass) {
