@@ -118,7 +118,6 @@ class ServiceMacro {
 					return true;
 				}
 			}
-			trace(superType);
 			return superClassIsService(superType);
 		} else return false;
 	}
