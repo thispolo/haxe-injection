@@ -25,13 +25,13 @@ class Main {
 
     private static function test1() : Void {
       var builder = ConfigurationBuilder.create('configs/');
-      builder.addJson('settings.json');
+      builder.addJson('test.json');
       var config = builder.build();
 
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService, LoggingService);
       collection.addSingleton(TestService, LoudTestService);
-      collection.addConfig(new TestConfig(config.getString('name')));
+      collection.addConfig(new TestConfig(config.getString('test')));
       
       var provider = collection.createProvider();
       sayWord(provider.getService(TestService));
@@ -41,13 +41,13 @@ class Main {
 
     private static function test2() : Void {
       var builder = ConfigurationBuilder.create('configs/');
-      builder.addJson('settings.json');
+      builder.addJson('test.json');
       var config = builder.build();
 
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService, LoggingService);
       collection.addSingleton(TestService, NormalTestService);
-      collection.addConfig(new TestConfig(config.getString('name')));
+      collection.addConfig(new TestConfig(config.getString('test')));
       
       var provider = collection.createProvider();
       sayWord(provider.getService(TestService));

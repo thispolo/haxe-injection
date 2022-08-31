@@ -14,7 +14,7 @@ final class ConfigurationBuilder {
     }
 
     public static macro function create(root : String) {
-        trace('Do copy!');
+        ConfigMacro.handleDirectory(root);
         return macro {
             new ConfigurationBuilder($v{root});
         }
