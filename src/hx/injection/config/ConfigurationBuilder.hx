@@ -1,5 +1,6 @@
 package hx.injection.config;
 
+import haxe.io.Path;
 import sys.io.File;
 import haxe.Json;
 
@@ -14,9 +15,11 @@ final class ConfigurationBuilder {
     }
 
     public static macro function create(root : String) {
-        ConfigMacro.handleDirectory(root);
+        var newroot = Path.normalize(root) + '/';
+        trace(newroot);
+        ConfigMacro.handleDirectory(newroot);
         return macro {
-            new ConfigurationBuilder($v{root});
+            new ConfigurationBuilder($v{newroot});
         }
     }
 

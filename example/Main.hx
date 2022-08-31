@@ -24,7 +24,7 @@ class Main {
     }
 
     private static function test1() : Void {
-      var builder = ConfigurationBuilder.create('configs/');
+      var builder = ConfigurationBuilder.create('configs');
       builder.addJson('test.json');
       var config = builder.build();
 
@@ -41,7 +41,7 @@ class Main {
 
     private static function test2() : Void {
       var builder = ConfigurationBuilder.create('configs/');
-      builder.addJson('test.json');
+      builder.addJson('test3.json');
       var config = builder.build();
 
       var collection = new ServiceCollection();

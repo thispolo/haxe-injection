@@ -1,5 +1,6 @@
 package hx.injection.config;
 
+import sys.io.FileOutput;
 #if macro
 import haxe.macro.Compiler;
 import sys.FileSystem;
