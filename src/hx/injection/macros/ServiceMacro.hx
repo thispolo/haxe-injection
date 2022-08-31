@@ -28,6 +28,7 @@ import haxe.ds.StringMap;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type.ClassType;
 
 class ServiceMacro {
 	public static function build() {
@@ -64,13 +65,6 @@ class ServiceMacro {
 					}
 				}
 				
-				// for (int in interfaces) {
-				// 	if (int.t.toString() == t.toString()) {
-				// 		throw "Service Builder: Recursive parameter definition.";
-				// 	}
-				// }
-
-				trace(names);
 				switch (field.kind) {
 					case FFun(f):
 						var argNum = 1;
@@ -97,12 +91,11 @@ class ServiceMacro {
 					default:
 				}
 				
-				var isSubclass = (classType.superClass != null);
 				var access = [Access.APrivate];
-				if(isSubclass) {
+				if(superClassIsService(classType)) {
 					access.push(Access.AOverride);
 				}
-
+				
 				var newField = {
 					name: funcName,
 					access: access,
@@ -110,10 +103,23 @@ class ServiceMacro {
 					pos: Context.currentPos(),
 				}
 				fields.push(newField);
-				//break;
 			}
 		}
 		return fields;
+	}
+
+	private static function superClassIsService(type : ClassType) : Bool {
+		var superClass = type.superClass;
+		if(superClass != null) {
+			var superType = superClass.t.get();
+			for (int in superType.interfaces) {
+				var interfaceType = int.t.get();
+				if(interfaceType.name == 'Service') {
+					return true;
+				}
+			}
+			return superClassIsService(superType);
+		} else return false;
 	}
 }
 #end

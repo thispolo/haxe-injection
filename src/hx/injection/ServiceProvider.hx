@@ -31,13 +31,20 @@ final class ServiceProvider implements Destructable {
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
 
+	private var _resolvedSingletonOrder : Array<String>;
 	private var _resolvedSingletons : StringMap<Service>;
+	
+	private var _resolvedScopeOrder : Array<String>;
 	private var _resolvedScopes : StringMap<Service>;
 
 	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
+
+		_resolvedSingletonOrder = new Array();
 		_resolvedSingletons = new StringMap();
+		
+		_resolvedScopeOrder = new Array();
 		_resolvedScopes = new StringMap();
 	}
 
@@ -83,6 +90,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getSingleton(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
+			_resolvedSingletonOrder.insert(0, implementation);
 			_resolvedSingletons.set(implementation, instance);
 		}
 		return instance;
@@ -96,6 +104,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getScoped(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
+			_resolvedScopeOrder.insert(0, implementation);
 			_resolvedScopes.set(implementation, instance);
 		}
 		return instance;
@@ -164,7 +173,8 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function destroySingletons() : Void {
-		for(singleton in _resolvedSingletons) {
+		for(key in _resolvedSingletonOrder) {
+			var singleton = _resolvedSingletons.get(key);
 			if(Std.isOfType(singleton, Destructable)) {
 				cast(singleton, Destructable).destroy();
 			}
@@ -172,7 +182,8 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function destroyScopes() : Void {
-		for(scope in _resolvedScopes) {
+		for(key in _resolvedScopeOrder) {
+			var scope = _resolvedSingletons.get(key);
 			if(Std.isOfType(scope, Destructable)) {
 				cast(scope, Destructable).destroy();
 			}
