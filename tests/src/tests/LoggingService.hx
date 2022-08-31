@@ -1,4 +1,4 @@
-package example;
+package example.basictest;
 
 import hx.injection.Service;
 

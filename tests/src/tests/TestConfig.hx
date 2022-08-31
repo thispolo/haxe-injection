@@ -1,4 +1,4 @@
-package example;
+package example.basictest;
 
 class TestConfig {
     public var word : String;

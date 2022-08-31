@@ -1,6 +1,6 @@
-package example;
+package example.basictest;
 
-class NormalTestService implements TestService {
+class LoudTestService implements TestService {
 
     private var _config : TestConfig;
     private var _logging : LoggingService;
@@ -11,7 +11,7 @@ class NormalTestService implements TestService {
     }
 
     public function sayWord() : Void {
-        _logging.log(_config.word);
+        _logging.log(_config.word.toUpperCase());
     }
-
+    
 }

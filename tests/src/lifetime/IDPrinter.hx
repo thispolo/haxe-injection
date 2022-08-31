@@ -1,8 +1,8 @@
-package example.scoping;
+package lifetime;
 
 import hx.injection.Service;
 
-final class ScopedIDPrinter implements Service {
+final class IDPrinter implements Service {
 
     private var _id : Int;
 

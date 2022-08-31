@@ -1,0 +1,16 @@
+{
+	"lifetime.ScopingTest": {
+		"pos": {
+			"line": 5,
+			"file": "src/lifetime/ScopingTest.hx"
+		},
+		"methods": {
+			"testScopedEqual": {
+				"line": 7
+			},
+			"testScopedNotEqual": {
+				"line": 17
+			}
+		}
+	}
+}
