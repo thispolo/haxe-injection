@@ -1,5 +1,6 @@
 package example;
 
+import hx.injection.config.ConfigurationBuilder;
 import example.destructable.ADestructableService;
 import example.destructable.DestructableService;
 import example.binding.SecondChainDependency;
@@ -23,10 +24,14 @@ class Main {
     }
 
     private static function test1() : Void {
+      var builder = ConfigurationBuilder.create('configs/');
+      builder.addJson('settings.json');
+      var config = builder.build();
+
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService, LoggingService);
       collection.addSingleton(TestService, LoudTestService);
-      collection.addConfig(new TestConfig());
+      collection.addConfig(new TestConfig(config.getString('name')));
       
       var provider = collection.createProvider();
       sayWord(provider.getService(TestService));
@@ -35,10 +40,14 @@ class Main {
     }
 
     private static function test2() : Void {
+      var builder = ConfigurationBuilder.create('configs/');
+      builder.addJson('settings.json');
+      var config = builder.build();
+
       var collection = new ServiceCollection();
       collection.addSingleton(LoggingService, LoggingService);
       collection.addSingleton(TestService, NormalTestService);
-      collection.addConfig(new TestConfig());
+      collection.addConfig(new TestConfig(config.getString('name')));
       
       var provider = collection.createProvider();
       sayWord(provider.getService(TestService));
