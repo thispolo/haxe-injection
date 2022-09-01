@@ -1,7 +1,7 @@
-package example.destructable;
+package destructable;
 
 import hx.injection.Service;
 
 interface DestructableService extends Service {
-    public function createMeme() : Void;
+    public function getMeme() : Meme;
 }

@@ -1,4 +1,4 @@
-package example.segregation;
+package segregation;
 
 import hx.injection.Service;
 

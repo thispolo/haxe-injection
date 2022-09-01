@@ -1,4 +1,4 @@
-package example.binding;
+package binding;
 
 final class SecondChainDependency implements ChainedDependency {
 
@@ -9,8 +9,7 @@ final class SecondChainDependency implements ChainedDependency {
         _chain = chain;
     }
 
-	public function doThing() {
-        trace('Second: Hello');
-        _chain.doThing();
+	public function getChain() : ChainedDependency {
+        return _chain;
     }
 }

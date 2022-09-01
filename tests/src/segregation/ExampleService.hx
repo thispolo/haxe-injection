@@ -1,4 +1,4 @@
-package example.segregation;
+package segregation;
 
 final class ExampleService implements NumberService implements TextService {
 

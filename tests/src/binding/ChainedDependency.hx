@@ -1,7 +1,7 @@
-package example.binding;
+package binding;
 
 import hx.injection.Service;
 
 interface ChainedDependency extends Service {
-    public function doThing() : Void;
+    public function getChain() : ChainedDependency;
 }

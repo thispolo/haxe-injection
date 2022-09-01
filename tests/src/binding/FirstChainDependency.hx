@@ -1,11 +1,11 @@
-package example.binding;
+package binding;
 
 final class FirstChainDependency implements ChainedDependency {
     public function new() {
         
     }
 
-	public function doThing() {
-        trace('First: there!');
+	public function getChain() : ChainedDependency {
+        return null;
     }
 }
