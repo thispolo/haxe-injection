@@ -16,7 +16,6 @@ final class ConfigurationBuilder {
 
     public static macro function create(root : String) {
         var newroot = Path.normalize(root) + '/';
-        trace(newroot);
         ConfigMacro.handleDirectory(newroot);
         return macro {
             new ConfigurationBuilder($v{newroot});
