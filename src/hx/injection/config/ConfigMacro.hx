@@ -18,6 +18,7 @@ final class ConfigMacro {
         var cwd = Sys.getCwd();
         var source = Path.normalize(Path.join([cwd, rootpath]));
 
+
         if(!FileSystem.exists(source))
             Context.error('No such folder \'$rootpath\' in project root.', Context.currentPos());
         
@@ -39,6 +40,7 @@ final class ConfigMacro {
                     copy(srcFile, dstFile);
                 case false:
                     File.copy(srcFile, dstFile);
+                    Context.registerModuleDependency('hx.injection.config.ConfigMacro', srcFile);
             }
         }
     }

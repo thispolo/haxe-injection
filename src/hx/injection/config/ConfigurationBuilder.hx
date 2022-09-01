@@ -1,5 +1,6 @@
 package hx.injection.config;
 
+import haxe.macro.Context;
 import haxe.io.Path;
 import sys.io.File;
 import haxe.Json;
@@ -31,9 +32,7 @@ final class ConfigurationBuilder {
         var result = {};
         for(jsonPath in _jsonPaths) {
             var json = makeJson(jsonPath);
-            for (field in Reflect.fields(json)) {
-                Reflect.setField(result, field.toLowerCase(), Reflect.field(json, field));
-            }
+            addToResult(json, result);
         }
         return new Configuration(result);
     }
@@ -41,5 +40,15 @@ final class ConfigurationBuilder {
     private function makeJson(source : String) : Dynamic {
         var content = File.getContent(source);
         return Json.parse(content);
+    }
+
+    private function addToResult(source : Dynamic, destination : Dynamic) : Void {
+        for(field in Reflect.fields(source)) {
+            var inner = {};
+            addToResult(Reflect.field(source, field), inner);
+            if(Reflect.fields(inner).length > 0)
+                Reflect.setField(destination, field.toLowerCase(), inner);
+            else Reflect.setField(destination, field.toLowerCase(), Reflect.field(source, field));
+        }
     }
 }
