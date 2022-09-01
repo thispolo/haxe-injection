@@ -40,6 +40,7 @@ final class ConfigTest extends utest.Test {
         Assert.equals(configuration.getString('outer.inner'), 'myValue');
     }
 
+    // Value types:
     public function testConfigurationInt() {
         var content = '{
             "value": 5
@@ -82,5 +83,50 @@ final class ConfigTest extends utest.Test {
         var configuration = new Configuration(json);
       
         Assert.equals(configuration.getString('value'), "Hi there!");
+    }
+
+    // Arrays of value types:
+    public function testConfigurationIntArray() {
+        var content = '{
+            "value": [5]
+        }';
+
+        var json = Json.parse(content);
+        var configuration = new Configuration(json);
+      
+        Assert.equals(configuration.getIntArray('value')[0], 5);
+    }
+
+    public function testConfigurationBoolArray() {
+        var content = '{
+            "value": [true]
+        }';
+
+        var json = Json.parse(content);
+        var configuration = new Configuration(json);
+      
+        Assert.equals(configuration.getBoolArray('value')[0], true);
+    }
+
+    public function testConfigurationFloatArray() {
+        var content = '{
+            "value": [1.0]
+        }';
+
+        var json = Json.parse(content);
+        var configuration = new Configuration(json);
+      
+        Assert.equals(configuration.getFloatArray('value')[0], 1.0);
+    }
+
+    public function testConfigurationStringArray() {
+        var content = '{
+            "value": ["Hi there!"]
+        }';
+        
+        var json = Json.parse(content);
+        var configuration = new Configuration(json);
+      
+        Assert.equals(configuration.getStringArray('value')[0], "Hi there!");
     }
 }
