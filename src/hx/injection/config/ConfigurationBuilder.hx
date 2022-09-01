@@ -9,10 +9,12 @@ final class ConfigurationBuilder {
 
     private var _root : String;
     private var _jsonPaths : Array<String>;
+    private var _envVars : Array<String>;
 
     public function new(root : String) {
         _root = root;
         _jsonPaths = new Array();
+        _envVars = new Array();
     }
 
     public static macro function create(root : String) {
@@ -28,11 +30,25 @@ final class ConfigurationBuilder {
         return this;
     }
 
+    public function addEnvVar(name : String) : ConfigurationBuilder {
+        _envVars.push(name);
+        return this;
+    }
+
     public function build() : Configuration {
         var result = {};
+
         for(jsonPath in _jsonPaths) {
             var json = makeJson(jsonPath);
             addToResult(json, result);
+        }
+
+        for(vars in _envVars) {
+            var env = Sys.getEnv(vars);
+            if(env == null)
+                throw new haxe.Exception('No such environment variable \"${vars}\""');
+
+            Reflect.setField(result, vars, env);
         }
         return new Configuration(result);
     }

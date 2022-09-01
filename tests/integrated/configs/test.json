@@ -1,8 +1,8 @@
 {
     "Outer": {
         "Inner": {
-            "Value": "My hello string.",
-            "AnotherValue": "My hello string."
+            "Value": "My first string.",
+            "AnotherValue": "My other string."
         },
         "AnotherInner": 2
     }
