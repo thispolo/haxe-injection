@@ -12,4 +12,5 @@ final class SecondChainDependency implements ChainedDependency {
 	public function getChain() : ChainedDependency {
         return _chain;
     }
+    
 }
