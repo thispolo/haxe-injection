@@ -55,9 +55,25 @@ class ServiceMacro {
 				var names = new StringMap();
 				if(metas != null) {
 					for(meta in metas) {
-						if(meta.name.toUpperCase() == ':NAMED') {
-							switch([meta.params[0].expr, meta.params[1].expr]) {
-								case [EConst(CString(s1)), EConst(CString(s2))]:
+						if(meta.name == ':binding') {
+							var expr1 = meta.params[0].expr;
+							var expr2 = meta.params[1].expr;
+							
+							switch([expr1, expr2]) {
+								case [EConst(CIdent(s1)), EConst(CString(s2))]:
+									switch (field.kind) {
+										case FFun(f):
+											var check = false;
+											for(arg in f.args) {
+												if(arg.name == s1) {
+													check = true;
+													break;
+												}
+											}
+											if(!check)
+												Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
+										default:
+									}
 									names.set(s1, s2);
 								default:
 							}

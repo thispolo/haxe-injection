@@ -90,7 +90,10 @@ class ServiceCollection {
 		var implementationType = type(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		definition.add(key==null
+			? ServiceProvider.DefaultType
+			:key,
+			implementationType);
 	}
 
 	/**

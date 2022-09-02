@@ -4,7 +4,7 @@ final class SecondChainDependency implements ChainedDependency {
 
     private var _chain : ChainedDependency;
 
-    @:named('chain', 'First')
+    @:binding(chain, 'First')
     public function new(chain : ChainedDependency) {
         _chain = chain;
     }
