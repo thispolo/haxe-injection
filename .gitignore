@@ -1,3 +1,4 @@
 build.hxml
 bin/
 .vscode/
+.unittest/

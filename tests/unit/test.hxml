@@ -1,0 +1,5 @@
+-cp src
+-main Main
+-lib haxe-injection
+-lib utest
+-x Main
