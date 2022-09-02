@@ -16,15 +16,23 @@ final class ConfigTest {
     public function runEnv() {
         var builder = ConfigurationBuilder.create('configs');
         builder.addEnvVar('haxepath');
-        var config = builder.build();
-
-        trace(config.getString('haxepath'));
+        try {
+            var config = builder.build();
+            trace(config.getString('haxepath'));
+        } catch(e : haxe.Exception) {
+            trace('Failed!');
+        }
     }
 
     public function runEnvAndJson() {
         var builder = ConfigurationBuilder.create('configs');
         builder.addJson('test.json');
         builder.addEnvVar('haxepath');
-        var config = builder.build();
+        try {
+            var config = builder.build();
+            trace(config.getString('haxepath'));
+        } catch(e : haxe.Exception) {
+            trace('Failed!');
+        }
     }
 }
