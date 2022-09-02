@@ -73,7 +73,13 @@ class ServiceMacro {
 												Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
 										default:
 									}
-									names.set(s1, getClassType(expr2));
+									var type = getClassType(expr2);
+									try {
+										Context.getType(type);
+									} catch (e : Dynamic) {
+										Context.error('No such type \"${type}\"" exists to bind in ${Context.getLocalModule()}', pos);
+									}
+									names.set(s1, type);
 								default:
 							}
 						}
