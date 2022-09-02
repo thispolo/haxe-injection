@@ -26,6 +26,5 @@ final class ConfigTest {
         builder.addJson('test.json');
         builder.addEnvVar('haxepath');
         var config = builder.build();
-        trace(config);
     }
 }

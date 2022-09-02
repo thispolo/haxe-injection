@@ -1,7 +1,7 @@
 package hx.injection.config;
 
-import sys.io.FileOutput;
 #if macro
+import sys.io.FileOutput;
 import haxe.macro.Compiler;
 import sys.FileSystem;
 import haxe.io.Path;
@@ -16,6 +16,7 @@ final class ConfigMacro {
 
         var output = Compiler.getOutput();
         var cwd = Sys.getCwd();
+        
         var source = Path.normalize(Path.join([cwd, rootpath]));
 
 
@@ -39,8 +40,10 @@ final class ConfigMacro {
                 case true:
                     copy(srcFile, dstFile);
                 case false:
-                    File.copy(srcFile, dstFile);
-                    Context.registerModuleDependency('hx.injection.config.ConfigMacro', srcFile);
+                    if(~/.*\.json/.match(srcFile)) {
+                        File.copy(srcFile, dstFile);
+                        Context.registerModuleDependency('hx.injection.config.ConfigurationBuilder', srcFile);
+                    }
             }
         }
     }

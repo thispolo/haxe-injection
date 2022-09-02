@@ -26,6 +26,9 @@ final class ConfigurationBuilder {
     }
 
     public function addJson(path : String) : ConfigurationBuilder {
+        if(!~/^.*\.json$/.match(path))
+            throw new haxe.Exception('File requires a .json file format');
+
         _jsonPaths.push('${_root}${path}');
         return this;
     }
@@ -48,7 +51,7 @@ final class ConfigurationBuilder {
             if(env == null)
                 throw new haxe.Exception('No such environment variable \"${vars}\""');
 
-            Reflect.setField(result, vars, env);
+            Reflect.setField(result, vars.toLowerCase(), env);
         }
         return new Configuration(result);
     }
