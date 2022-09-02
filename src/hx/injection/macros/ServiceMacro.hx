@@ -58,9 +58,8 @@ class ServiceMacro {
 						if(meta.name == ':binding') {
 							var expr1 = meta.params[0].expr;
 							var expr2 = meta.params[1].expr;
-							
 							switch([expr1, expr2]) {
-								case [EConst(CIdent(s1)), EConst(CString(s2))]:
+								case [EConst(CIdent(s1)), _]:
 									switch (field.kind) {
 										case FFun(f):
 											var check = false;
@@ -74,7 +73,7 @@ class ServiceMacro {
 												Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
 										default:
 									}
-									names.set(s1, s2);
+									names.set(s1, getClassType(expr2));
 								default:
 							}
 						}
@@ -122,6 +121,18 @@ class ServiceMacro {
 			}
 		}
 		return fields;
+	}
+
+	private static function getClassType(expr : ExprDef) : String {
+		var out = '';
+		switch(expr) {
+			case EField(e, field):
+				out += getClassType(e.expr) + '.' + field;
+			case EConst(CIdent(s)):
+				out += s;
+			default:
+		}
+		return out;
 	}
 
 	private static function superClassIsService(type : ClassType) : Bool {
