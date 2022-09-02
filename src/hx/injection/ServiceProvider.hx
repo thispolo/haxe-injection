@@ -51,13 +51,16 @@ final class ServiceProvider implements Destructable {
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>, ?key : Null<String>):S {
-		var key = key == null?ServiceProvider.DefaultType:key;
+	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
+		var key = (binding == null)
+			? ServiceProvider.DefaultType
+			: Type.getClassName(binding);
+
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
 		var requestedService = requestedGroup.getServiceTypes().get(key);
 		if (requestedService == null) {
-			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
+			throw new haxe.Exception('Service of type \'${serviceName}\' (${key}) not found.');
 		}
 
 		var implementation = handleServiceRequest(requestedService);
