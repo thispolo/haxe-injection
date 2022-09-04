@@ -133,7 +133,10 @@ final class ServiceProvider implements Destructable {
 			throw new haxe.Exception('Dependency ' + arg + ' for ' + service + ' is missing. Did you add it to the collection?');
 		}
 
-		return Type.createInstance(Type.resolveClass(service), dependencies);
+		var cl = Type.resolveClass(service);
+		if(cl != null) 
+			return Type.createInstance(cl, dependencies);
+		else throw new haxe.Exception('Cannot resolve ${service} into a class.');
 	}
 
 	private function getServiceArgs(service:String) : Array<String> {

@@ -113,7 +113,7 @@ class ServiceMacro {
 											default:
 										}
 									}
-									trace(parameterArgs);
+									
 									var serviceName = argName != null? '|' + argName : '';
 									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
 								default:
