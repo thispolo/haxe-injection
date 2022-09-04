@@ -1,3 +1,4 @@
+import generics.GenericTest;
 import config.ConfigTest;
 
 final class Main {
@@ -6,5 +7,8 @@ final class Main {
         configtest.runJson();
         configtest.runEnv();
         configtest.runEnvAndJson();
+
+        var generics = new GenericTest();
+        generics.run();
     }
 }

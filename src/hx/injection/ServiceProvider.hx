@@ -136,10 +136,10 @@ final class ServiceProvider implements Destructable {
 		return Type.createInstance(Type.resolveClass(service), dependencies);
 	}
 
-	private function getServiceArgs(service:String):Array<String> {
+	private function getServiceArgs(service:String) : Array<String> {
 		var type = Type.resolveClass(service);
 		var instance = Type.createEmptyInstance(type);
-		return instance.getConstructorArgs();
+		return (instance.getConstructorArgs() : Array<String>);
 	}
 
 	private function getSingleton(serviceName:String):Service {
@@ -157,7 +157,10 @@ final class ServiceProvider implements Destructable {
 	private function getRequestedService(serviceName:String):ServiceType {
 		var serviceDefinition = serviceName.split('|');
 		var serviceName = serviceDefinition[0];
-		var key = (serviceDefinition[1] != null) ? serviceDefinition[1] : ServiceProvider.DefaultType;
+		var key = (serviceDefinition[1] != null)
+			? serviceDefinition[1] 
+			: ServiceProvider.DefaultType;
+
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
 			return requested.getServiceTypes().get(key);
@@ -195,4 +198,9 @@ final class ServiceProvider implements Destructable {
 
 	public static inline var DefaultType : String = '';
 
+}
+
+typedef ServiceArg = {
+	var name : String;
+	@:optional var params : Array<String>;
 }
