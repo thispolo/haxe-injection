@@ -9,7 +9,7 @@ final class Generic {
         var signature = Type.getClassName(basetype);
 
         for(param in params) {
-            signature += '_' + Type.getClassName(param);
+            signature += '_' + handleClassName(param);
         }
 
         return {
@@ -18,4 +18,7 @@ final class Generic {
         };
     }
     
+    private static function handleClassName(param : Dynamic) : String {
+        return Type.getClassName(param).split('.').join('_');
+    }
 }

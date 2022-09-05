@@ -107,9 +107,9 @@ class ServiceMacro {
 									for (param in params) {
 										switch(param) {
 											case TAbstract(t, params):
-												parameterArgs += '_' + t.toString();
+												parameterArgs += '_' + t.toString().split('.').join('_');
 											case TInst(t, params):
-												parameterArgs += '_' + t.toString();
+												parameterArgs += '_' + t.toString().split('.').join('_');
 											default:
 										}
 									}
