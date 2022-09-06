@@ -115,8 +115,44 @@ Furthermore, this approach satisfies the SOLID principles and prevents platform-
 ## Other features
 
 ### Configuration files
+It is useful to be able to configure our application with respect to a collection of `.json` files and environment variables. This can be done by adding a folder of a chosen name to your project root, and then pointing to the root using the configuration builder like so:
+
+```haxe
+    var builder = ConfigurationBuilder.from('MyConfigFolder');
+```
+
+Jsons and environment variables can then be added to the builder:
+
+```haxe
+    builder.addJson('test.json');
+    builder.addEnvVar('haxepath');
+```
+
+We can then build our configuration file using `builder.build()` and then retrieve values like so:
+
+```haxe
+    var config = builder.build();
+    var myString = config.getString('key.nestedkey');
+    var myIntArray = config.getIntArray('key.array');
+    var haxePath = config.getString('haxepath');
+```
+where nested values from the Json file can be retrieved using a `key1.key2.key3` syntax and so on.
 
 ### Type parameters
+Services that expect type parameters, such as `MyService<Int, Float>` can be added to the service collection like so:
+
+```haxe
+    collection.addSingleton(Generic.of(MyService, Int, Float), SubService);
+```
+
+The provider will then map these services into classes that require `MyService` with the same type signature:
+
+```haxe
+class SomeService implements Service {
+    // Will recieve SubService...
+    public function new(service : MyService<Int, Float>) {}
+}
+```
 
 ### Scoping
 Sometimes it is useful to generate instances based on scope, like so:
@@ -199,4 +235,5 @@ will have `Destroy()` called when the provider goes out of scope or is itself de
 ## Future features
 - Allow for optionally adding services using callbacks for setting optional arguments
 - Allow implementations to depend on iterators of service types
+- Allow for configuration encryption and different configuration implementations per platform
 - Fully support the `@:generic` metadata
