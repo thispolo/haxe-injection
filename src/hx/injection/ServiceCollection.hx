@@ -1,6 +1,7 @@
 package hx.injection;
 
 import haxe.ds.StringMap;
+import hx.injection.generics.GenericDefinition;
 
 /*
 	MIT License
@@ -46,51 +47,105 @@ class ServiceCollection {
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>) : Void {
-		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Singleton(name)));
+	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceConfig {
+		return handleServiceAdd(service, implementation, (name : String) -> (return ServiceType.Singleton(name)));
 	}
 
 	/**
 		Add a singleton service to the collection. A singleton will only ever be the same instance.
 	**/
-	overload public extern inline function addSingleton<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
-		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Singleton(name)));
+	overload public extern inline function addSingleton<T:Service>(service:Class<T>):ServiceConfig {
+		return handleServiceAdd(service, service, (name : String) -> (return ServiceType.Singleton(name)));
+	}
+
+	/**
+		Add a singleton service to the collection. A singleton will only ever be the same instance.
+	**/
+	overload public extern inline function addSingleton<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>):ServiceConfig {
+		return handleGenericAdd(service, implementation, (name : String) -> (return ServiceType.Singleton(name)));
+	}
+
+	/**
+		Add a singleton service to the collection. A singleton will only ever be the same instance.
+	**/
+	overload public extern inline function addSingleton<T:Service>(service:GenericDefinition<T>):ServiceConfig {
+		return handleGenericAdd(service, service.basetype, (name : String) -> (return ServiceType.Singleton(name)));
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
-	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>):Void {
-		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Transient(name)));
+	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceConfig {
+		return handleServiceAdd(service, implementation, (name : String) -> (return ServiceType.Transient(name)));
 	}
 
 	/**
 		Add a transient service to the collection. Transient services always return as a new instance.
 	**/
-	overload extern inline public function addTransient<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
-		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Transient(name)));
+	overload extern inline public function addTransient<T:Service>(service:Class<T>):ServiceConfig {
+		return handleServiceAdd(service, service, (name : String) -> (return ServiceType.Transient(name)));
+	}
+
+	/**
+		Add a transient service to the collection. Transient services always return as a new instance.
+	**/
+	overload public extern inline function addTransient<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>):ServiceConfig {
+		return handleGenericAdd(service, implementation, (name : String) -> (return ServiceType.Transient(name)));
+	}
+
+	/**
+		Add a transient service to the collection. Transient services always return as a new instance.
+	**/
+	overload public extern inline function addTransient<T:Service>(service:GenericDefinition<T>):ServiceConfig {
+		return handleGenericAdd(service, service.basetype, (name : String) -> (return ServiceType.Transient(name)));
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
-	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>):Void {
-		handleServiceAdd(service, implementation, key, (name : String) -> (return ServiceType.Scoped(name)));
+	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceConfig {
+		return handleServiceAdd(service, implementation, (name : String) -> (return ServiceType.Scoped(name)));
 	}
 
 	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
-	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, ?key : Null<String>):Void {
-		handleServiceAdd(service, service, key, (name : String) -> (return ServiceType.Scoped(name)));
+	overload public extern inline function addScoped<T:Service>(service:Class<T>):ServiceConfig {
+		return handleServiceAdd(service, service, (name : String) -> (return ServiceType.Scoped(name)));
 	}
 
-	private function handleServiceAdd<T:Service, V:T>(service:Class<T>, implementation:Class<V>, ?key : Null<String>, type : String -> ServiceType):Void {
+	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>):ServiceConfig {
+		return handleGenericAdd(service, implementation, (name : String) -> (return ServiceType.Scoped(name)));
+	}
+
+	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service>(service:GenericDefinition<T>):ServiceConfig {
+		return handleGenericAdd(service, service.basetype, (name : String) -> (return ServiceType.Scoped(name)));
+	}
+
+	private function handleServiceAdd<T:Service, V:T>(service:Class<T>, implementation:Class<V>, addAs : String -> ServiceType):ServiceConfig {
 		var serviceName = Type.getClassName(service);
-		var implementationType = type(Type.getClassName(implementation));
+		var implementationType = addAs(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
-		definition.add(key==null?ServiceProvider.DefaultType:key, implementationType);
+		definition.add(ServiceProvider.DefaultType, implementationType);
+
+		return new ServiceConfig(definition, Type.getClassName(implementation), implementationType);
+	}
+
+	private function handleGenericAdd<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>, addAs : String -> ServiceType):ServiceConfig {
+		var serviceName = service.signature;
+		var implementationType = addAs(Type.getClassName(implementation));
+		var definition = initialiseDefinition(serviceName);
+
+		definition.add(ServiceProvider.DefaultType, implementationType);
+
+		return new ServiceConfig(definition, Type.getClassName(implementation), implementationType);
 	}
 
 	/**

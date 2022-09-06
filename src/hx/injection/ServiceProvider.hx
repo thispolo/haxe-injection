@@ -31,26 +31,36 @@ final class ServiceProvider implements Destructable {
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
 
+	private var _resolvedSingletonOrder : Array<String>;
 	private var _resolvedSingletons : StringMap<Service>;
+	
+	private var _resolvedScopeOrder : Array<String>;
 	private var _resolvedScopes : StringMap<Service>;
 
 	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
+
+		_resolvedSingletonOrder = new Array();
 		_resolvedSingletons = new StringMap();
+		
+		_resolvedScopeOrder = new Array();
 		_resolvedScopes = new StringMap();
 	}
 
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>, ?key : Null<String>):S {
-		var key = key == null?ServiceProvider.DefaultType:key;
+	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
+		var key = (binding == null)
+			? ServiceProvider.DefaultType
+			: Type.getClassName(binding);
+
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
 		var requestedService = requestedGroup.getServiceTypes().get(key);
 		if (requestedService == null) {
-			throw new haxe.Exception("Service of type \'" + service + "\' not found.");
+			throw new haxe.Exception('Service of type \'${serviceName}\' (${key}) not found.');
 		}
 
 		var implementation = handleServiceRequest(requestedService);
@@ -83,6 +93,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getSingleton(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
+			_resolvedSingletonOrder.insert(0, implementation);
 			_resolvedSingletons.set(implementation, instance);
 		}
 		return instance;
@@ -96,6 +107,7 @@ final class ServiceProvider implements Destructable {
 		var instance = getScoped(implementation);
 		if (instance == null) {
 			instance = buildDependencyTree(implementation);
+			_resolvedScopeOrder.insert(0, implementation);
 			_resolvedScopes.set(implementation, instance);
 		}
 		return instance;
@@ -121,13 +133,16 @@ final class ServiceProvider implements Destructable {
 			throw new haxe.Exception('Dependency ' + arg + ' for ' + service + ' is missing. Did you add it to the collection?');
 		}
 
-		return Type.createInstance(Type.resolveClass(service), dependencies);
+		var cl = Type.resolveClass(service);
+		if(cl != null) 
+			return Type.createInstance(cl, dependencies);
+		else throw new haxe.Exception('Cannot resolve ${service} into a class.');
 	}
 
-	private function getServiceArgs(service:String):Array<String> {
+	private function getServiceArgs(service:String) : Array<String> {
 		var type = Type.resolveClass(service);
 		var instance = Type.createEmptyInstance(type);
-		return instance.getConstructorArgs();
+		return (instance.getConstructorArgs() : Array<String>);
 	}
 
 	private function getSingleton(serviceName:String):Service {
@@ -145,7 +160,10 @@ final class ServiceProvider implements Destructable {
 	private function getRequestedService(serviceName:String):ServiceType {
 		var serviceDefinition = serviceName.split('|');
 		var serviceName = serviceDefinition[0];
-		var key = (serviceDefinition[1] != null) ? serviceDefinition[1] : ServiceProvider.DefaultType;
+		var key = (serviceDefinition[1] != null)
+			? serviceDefinition[1] 
+			: ServiceProvider.DefaultType;
+
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
 			return requested.getServiceTypes().get(key);
@@ -164,7 +182,8 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function destroySingletons() : Void {
-		for(singleton in _resolvedSingletons) {
+		for(key in _resolvedSingletonOrder) {
+			var singleton = _resolvedSingletons.get(key);
 			if(Std.isOfType(singleton, Destructable)) {
 				cast(singleton, Destructable).destroy();
 			}
@@ -172,7 +191,8 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function destroyScopes() : Void {
-		for(scope in _resolvedScopes) {
+		for(key in _resolvedScopeOrder) {
+			var scope = _resolvedSingletons.get(key);
 			if(Std.isOfType(scope, Destructable)) {
 				cast(scope, Destructable).destroy();
 			}
@@ -181,4 +201,9 @@ final class ServiceProvider implements Destructable {
 
 	public static inline var DefaultType : String = '';
 
+}
+
+typedef ServiceArg = {
+	var name : String;
+	@:optional var params : Array<String>;
 }

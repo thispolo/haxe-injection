@@ -23,11 +23,13 @@ package hx.injection.macros;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
+import haxe.display.Display.Package;
 import haxe.ds.StringMap;
 #if macro
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type.ClassType;
 
 class ServiceMacro {
 	public static function build() {
@@ -54,23 +56,37 @@ class ServiceMacro {
 				var names = new StringMap();
 				if(metas != null) {
 					for(meta in metas) {
-						if(meta.name.toUpperCase() == ':NAMED') {
-							switch([meta.params[0].expr, meta.params[1].expr]) {
-								case [EConst(CString(s1)), EConst(CString(s2))]:
-									names.set(s1, s2);
+						if(meta.name == ':binding') {
+							var expr1 = meta.params[0].expr;
+							var expr2 = meta.params[1].expr;
+							switch([expr1, expr2]) {
+								case [EConst(CIdent(s1)), _]:
+									switch (field.kind) {
+										case FFun(f):
+											var check = false;
+											for(arg in f.args) {
+												if(arg.name == s1) {
+													check = true;
+													break;
+												}
+											}
+											if(!check)
+												Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
+										default:
+									}
+									var type = getClassType(expr2);
+									try {
+										Context.getType(type);
+									} catch (e : Dynamic) {
+										Context.error('No such type \"${type}\"" exists to bind in ${Context.getLocalModule()}', pos);
+									}
+									names.set(s1, type);
 								default:
 							}
 						}
 					}
 				}
 				
-				// for (int in interfaces) {
-				// 	if (int.t.toString() == t.toString()) {
-				// 		throw "Service Builder: Recursive parameter definition.";
-				// 	}
-				// }
-
-				trace(names);
 				switch (field.kind) {
 					case FFun(f):
 						var argNum = 1;
@@ -87,8 +103,19 @@ class ServiceMacro {
 										}
 									}
 
+									var parameterArgs = '';
+									for (param in params) {
+										switch(param) {
+											case TAbstract(t, params):
+												parameterArgs += '_' + t.toString().split('.').join('_');
+											case TInst(t, params):
+												parameterArgs += '_' + t.toString().split('.').join('_');
+											default:
+										}
+									}
+									
 									var serviceName = argName != null? '|' + argName : '';
-									constructorArgs.push('${t.toString()}${serviceName}');
+									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
 								default:
 									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
 							}
@@ -97,12 +124,11 @@ class ServiceMacro {
 					default:
 				}
 				
-				var isSubclass = (classType.superClass != null);
 				var access = [Access.APrivate];
-				if(isSubclass) {
+				if(superClassIsService(classType)) {
 					access.push(Access.AOverride);
 				}
-
+				
 				var newField = {
 					name: funcName,
 					access: access,
@@ -110,10 +136,35 @@ class ServiceMacro {
 					pos: Context.currentPos(),
 				}
 				fields.push(newField);
-				//break;
 			}
 		}
 		return fields;
+	}
+
+	private static function getClassType(expr : ExprDef) : String {
+		var out = '';
+		switch(expr) {
+			case EField(e, field):
+				out += getClassType(e.expr) + '.' + field;
+			case EConst(CIdent(s)):
+				out += s;
+			default:
+		}
+		return out;
+	}
+
+	private static function superClassIsService(type : ClassType) : Bool {
+		var superClass = type.superClass;
+		if(superClass != null) {
+			var superType = superClass.t.get();
+			for (int in superType.interfaces) {
+				var interfaceType = int.t.get();
+				if(interfaceType.name == 'Service') {
+					return true;
+				}
+			}
+			return superClassIsService(superType);
+		} else return false;
 	}
 }
 #end
