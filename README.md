@@ -94,23 +94,25 @@ var testService = provider.getService(MyService);
 Suppose we want to make a program that runs both on Windows and on Chrome. We can do this at start up:
 
 ```haxe
-    var collection = new ServiceCollection();
+    public static function main() {
+        var collection = new ServiceCollection();
 
-    #if js
-    collection.addSingleton(RenderService, WebGLRenderService);
-    #else
-    collection.addTransient(RenderService, OpenGL3RenderService);
-    #end
+        #if js
+        collection.addSingleton(RenderService, WebGLRenderService);
+        #else
+        collection.addTransient(RenderService, OpenGL3RenderService);
+        #end
 
-    var provider = collection.createProvider();
-    var renderer = provider.getService(RenderService);
+        var provider = collection.createProvider();
+        var renderer = provider.getService(RenderService);
 
-    myApp.run(renderer);
+        renderer.run();
+    }
 ```
 
 While this may seem overkill for a simple application such as this, the true benefits of this library become apparent as an application grows in complexity. It prevents the laborious effort of manually typing out the dependency chain.
 
-Furthermore, this approach satisfies the SOLID principles and prevents platform-specific branching from being hidden away in functions; here it is exposed at the top level in the __composition root__ and makes it very obvious what the capabilities of your application are. It also makes for extending your application to new platforms trivial.
+Furthermore, this approach satisfies the SOLID principles and prevents platform-specific branching from being hidden away in functions; here it is exposed at the top level in the [**composition root**](https://blog.ploeh.dk/2011/07/28/CompositionRoot/) (in this case, `Main`) and makes it very obvious what the capabilities of your application are. It also makes for extending your application to new platforms trivial.
 
 ## Other features
 
@@ -153,6 +155,7 @@ class SomeService implements Service {
     public function new(service : MyService<Int, Float>) {}
 }
 ```
+While the term `generic` is used, this library currently does **not** support generics and is used as a placeholder for when it does.
 
 ### Scoping
 Sometimes it is useful to generate instances based on scope, like so:
