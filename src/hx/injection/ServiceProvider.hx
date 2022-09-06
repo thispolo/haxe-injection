@@ -133,13 +133,16 @@ final class ServiceProvider implements Destructable {
 			throw new haxe.Exception('Dependency ' + arg + ' for ' + service + ' is missing. Did you add it to the collection?');
 		}
 
-		return Type.createInstance(Type.resolveClass(service), dependencies);
+		var cl = Type.resolveClass(service);
+		if(cl != null) 
+			return Type.createInstance(cl, dependencies);
+		else throw new haxe.Exception('Cannot resolve ${service} into a class.');
 	}
 
-	private function getServiceArgs(service:String):Array<String> {
+	private function getServiceArgs(service:String) : Array<String> {
 		var type = Type.resolveClass(service);
 		var instance = Type.createEmptyInstance(type);
-		return instance.getConstructorArgs();
+		return (instance.getConstructorArgs() : Array<String>);
 	}
 
 	private function getSingleton(serviceName:String):Service {
@@ -157,7 +160,10 @@ final class ServiceProvider implements Destructable {
 	private function getRequestedService(serviceName:String):ServiceType {
 		var serviceDefinition = serviceName.split('|');
 		var serviceName = serviceDefinition[0];
-		var key = (serviceDefinition[1] != null) ? serviceDefinition[1] : ServiceProvider.DefaultType;
+		var key = (serviceDefinition[1] != null)
+			? serviceDefinition[1] 
+			: ServiceProvider.DefaultType;
+
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
 			return requested.getServiceTypes().get(key);
@@ -195,4 +201,9 @@ final class ServiceProvider implements Destructable {
 
 	public static inline var DefaultType : String = '';
 
+}
+
+typedef ServiceArg = {
+	var name : String;
+	@:optional var params : Array<String>;
 }

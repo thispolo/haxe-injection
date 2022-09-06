@@ -23,6 +23,7 @@ package hx.injection.macros;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
+import haxe.display.Display.Package;
 import haxe.ds.StringMap;
 #if macro
 
@@ -102,8 +103,19 @@ class ServiceMacro {
 										}
 									}
 
+									var parameterArgs = '';
+									for (param in params) {
+										switch(param) {
+											case TAbstract(t, params):
+												parameterArgs += '_' + t.toString().split('.').join('_');
+											case TInst(t, params):
+												parameterArgs += '_' + t.toString().split('.').join('_');
+											default:
+										}
+									}
+									
 									var serviceName = argName != null? '|' + argName : '';
-									constructorArgs.push('${t.toString()}${serviceName}');
+									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
 								default:
 									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
 							}
