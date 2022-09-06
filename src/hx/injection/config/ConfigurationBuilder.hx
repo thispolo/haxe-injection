@@ -17,6 +17,9 @@ final class ConfigurationBuilder {
         _envVars = new Array();
     }
 
+	/**
+		Create a configuration builder where `root` points to the directory of Json files in your project folder.
+	**/
     public static macro function create(root : String) {
         var newroot = Path.normalize(root) + '/';
         ConfigMacro.handleDirectory(newroot);
@@ -25,6 +28,9 @@ final class ConfigurationBuilder {
         }
     }
 
+	/**
+		Add a Json file, pointed to by `path`, to the configuration structure.
+	**/
     public function addJson(path : String) : ConfigurationBuilder {
         if(!~/^.*\.json$/.match(path))
             throw new haxe.Exception('File requires a .json file format');
@@ -33,11 +39,17 @@ final class ConfigurationBuilder {
         return this;
     }
 
+	/**
+		Add an environment variable called `name` to the configuration structure.
+	**/
     public function addEnvVar(name : String) : ConfigurationBuilder {
         _envVars.push(name);
         return this;
     }
 
+	/**
+		Create a configuration.
+	**/
     public function build() : Configuration {
         var result = {};
 
