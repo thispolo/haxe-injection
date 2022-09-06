@@ -1,14 +1,15 @@
 # haxe-injection
 
-A straight-to-the-point DI container for Haxe. Supports singleton, transient, and singleton services.
+A dependency injection container for Haxe. Supports singleton, transient, and scoped services.
 
 ## Features
 
 - Three service lifecycles: Singleton, Transient, and Scoped
-- Configurable dependencies
+- Configuration handling and configurable dependencies
 - Dependencies can be segregated by service type
-- Dependencies can be bound to names for chaining purposes
+- Dependencies can be bound to names for chaining
 - Lifecycle management through `Destructable` interface
+- Basic handling of services with type parameters
 - Concrete self-binding
 
 ## Overview
@@ -49,51 +50,43 @@ During start up:-
 ```haxe
     var collection = new ServiceCollection();
     collection.addSingleton(TestService, NormalTestService);
+    collection.addSingleton(MyService);
 ``` 
 
-- Both singleton and transient services are supported. Singleton returns the same instance on every getService call, while transient will return a new instance every time:
-
-```haxe
-    var collection = new ServiceCollection();
-    collection.addSingleton(TestService, NormalTestService);
-    collection.addTransient(TestService, LoudTestService);
-```
-
-- Supply optional configuration files:
+- You can also supply optional configuration objects:
 
 ```haxe
 collection.addConfig(new TestConfig());
 ```
 
+- These will be **automatically** injected into classes whose constructor defines the service as a dependency:
+```haxe
+    import hx.injection.Service;
+
+    class MyService implements Service {
+        // Will recieve an instance of `TestConfig` and `MyService` automatically:
+        public function new(config : TestConfig, service : MyService) {
+
+        }
+    }
+``` 
+
 - After defining your application dependencies, you can create the service provider for injecting the services into your application:
 
 ```haxe
 var provider = collection.createProvider();
-var testService = provider.getService(TestService);
-var app = new MyApp(testService);
+var testService = provider.getService(MyService);
+// Do stuff with testService
 ```
 
-- Additionally, you can define dependencies between services and configurations simply by defining them as an argument in the constructor for the concrete implementation and adding them to the service collection:
+### Service types
+- Singleton, Transient, and Scoped services are supported. Singleton returns the same instance on every getService call, Transient will return a new instance every time, and Scoped will return the same instance within a scope:
 
 ```haxe
-    import hx.injection.Service;
-
-    class LoudTestService implements TestService {
-
-        private var _config : TestConfig;
-        private var _phoneService : PhoneService;
-
-        public function new(config : TestConfig, phoneService : PhoneService) {
-            _config = config;
-            _phoneService = phoneService;
-        }
-
-        public function sayWord() : Void {
-            var word = _config.word;
-            _phoneService.alert(word);
-            trace(_config.word);
-        }
-    }
+    var collection = new ServiceCollection();
+    collection.addSingleton(TestService, NormalTestService);
+    collection.addTransient(TestService, LoudTestService);
+    collection.addScoped(TestService, LoudTestService);
 ```
 
 ## So what?
@@ -119,8 +112,13 @@ While this may seem overkill for a simple application such as this, the true ben
 
 Furthermore, this approach satisfies the SOLID principles and prevents platform-specific branching from being hidden away in functions; here it is exposed at the top level in the __composition root__ and makes it very obvious what the capabilities of your application are. It also makes for extending your application to new platforms trivial.
 
-## Scoping
+## Other features
 
+### Configuration files
+
+### Type parameters
+
+### Scoping
 Sometimes it is useful to generate instances based on scope, like so:
 
 ```haxe
@@ -150,7 +148,7 @@ Sometimes it is useful to generate instances based on scope, like so:
 
 Essentially, new instances of scoped services are created on `newScope` and act like singletons __within__ that scope.
 
-## Chaining
+### Binding
 
 Suppose we want to chain together services of the same type, like so:
 
@@ -168,26 +166,26 @@ collection.addSingleton(SomeService, MyFirstService)
 collection.addSingleton(SomeService, MyOtherService)
 ```
 
-Such a definition would cause the provider throw a `recursive parameter` definition. We can remedy this by binding the service parameters and implementations to a given name:
+Such a definition would cause the provider throw a `recursive parameter` definition. We can remedy this by binding the constructor dependencies to implementations like so:
 
 ```haxe
 class MyFirstService implements SomeService {
 }
 
 class MyOtherService implements SomeService {
-    @:named('firstService', 'MyFirstService')
+    @:binding(firstService, MyFirstService)
     public function new(firstService : SomeService) {}
 }
 
 // Will WORK:
 var collection = new ServiceCollection();
-collection.addSingleton(SomeService, MyFirstService, 'firstService')
+collection.addSingleton(SomeService, MyFirstService).asBinding()
 collection.addSingleton(SomeService, MyOtherService)
 ```
 
-The provider will use the `@:named` metadata in conjuction with the `key` argument in the collection to correctly map an implementation to a given dependency type.
+The provider will use the `@:binding` metadata to map the argument of name `firstService` to a given implementation. We can then assign this implementation as a binding in the service collection using `asBinding`.
 
-## Lifecycle management
+### Lifecycle management
 
 Any service that implements the `Destructable` interface, like so:
 
@@ -199,6 +197,6 @@ class MyFirstService implements SomeService implements Destructable {
 will have `Destroy()` called when the provider goes out of scope or is itself destroyed.
 
 ## Future features
-- Allow for instancing services during assignment to the collection
-- Allow for optionally adding services using callbacks to for setting optional arguments
-- Improve binding convention to removal reliance on strings
+- Allow for optionally adding services using callbacks for setting optional arguments
+- Allow implementations to depend on iterators of service types
+- Fully support the `@:generic` metadata
