@@ -4,15 +4,16 @@ import hx.injection.Service;
 
 final class SomeClass implements Service {
 
-    private var _service : GenericService<Int>;
+    private var _service1 : GenericService<Int>;
+    private var _service2 : GenericService<SomeClass>;
 
-    public function new(service : GenericService<Int>) {
-        _service = service;
+    public function new(service1 : GenericService<Int>, service2 : GenericService<SomeClass>) {
+        _service1 = service1;
+        _service2 = service2;
     }
 
     public function call() {
-        _service.doThing(5);
-
-        trace(_service);
+        _service1.doThing(5);
+        _service2.doThing(this);
     }
 }

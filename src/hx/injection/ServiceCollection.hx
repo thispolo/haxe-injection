@@ -87,6 +87,20 @@ class ServiceCollection {
 	}
 
 	/**
+		Add a transient service to the collection. Transient services always return as a new instance.
+	**/
+	overload public extern inline function addTransient<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>):ServiceConfig {
+		return handleGenericAdd(service, implementation, (name : String) -> (return ServiceType.Transient(name)));
+	}
+
+	/**
+		Add a transient service to the collection. Transient services always return as a new instance.
+	**/
+	overload public extern inline function addTransient<T:Service>(service:GenericDefinition<T>):ServiceConfig {
+		return handleGenericAdd(service, service.basetype, (name : String) -> (return ServiceType.Transient(name)));
+	}
+
+	/**
 		Add a scoped service to the collection. A scoped service will be the same instance per scope.
 	**/
 	overload public extern inline function addScoped<T:Service, V:T>(service:Class<T>, implementation:Class<V>):ServiceConfig {
@@ -98,6 +112,20 @@ class ServiceCollection {
 	**/
 	overload public extern inline function addScoped<T:Service>(service:Class<T>):ServiceConfig {
 		return handleServiceAdd(service, service, (name : String) -> (return ServiceType.Scoped(name)));
+	}
+
+	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service, V:T>(service:GenericDefinition<T>, implementation:Class<V>):ServiceConfig {
+		return handleGenericAdd(service, implementation, (name : String) -> (return ServiceType.Scoped(name)));
+	}
+
+	/**
+		Add a scoped service to the collection. A scoped service will be the same instance per scope.
+	**/
+	overload public extern inline function addScoped<T:Service>(service:GenericDefinition<T>):ServiceConfig {
+		return handleGenericAdd(service, service.basetype, (name : String) -> (return ServiceType.Scoped(name)));
 	}
 
 	private function handleServiceAdd<T:Service, V:T>(service:Class<T>, implementation:Class<V>, addAs : String -> ServiceType):ServiceConfig {
