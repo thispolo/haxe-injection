@@ -95,6 +95,7 @@ class ServiceMacro {
 							switch (type) {
 								case TInst(t, params):
 									var argName = names.get(arg.name);
+
 									if(argName == null) {
 										for (int in interfaces) {
 											if (int.t.toString() == t.toString()) {
@@ -103,19 +104,23 @@ class ServiceMacro {
 										}
 									}
 
-									var parameterArgs = '';
-									for (param in params) {
-										switch(param) {
-											case TAbstract(t, params):
-												parameterArgs += '_' + t.toString().split('.').join('_');
-											case TInst(t, params):
-												parameterArgs += '_' + t.toString().split('.').join('_');
-											default:
-										}
-									}
+									var parameterArgs = paramsToString(params);
 									
 									var serviceName = argName != null? '|' + argName : '';
 									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
+								case TType(t, params):
+									var type = t.toString();
+									if(type == 'Iterator') {
+										var out = '(';
+										var param = params[0];
+										switch(param) {
+											case TInst(t, params):
+												out += t.toString() + paramsToString(params);
+											default:
+										}
+										out += ')';
+										constructorArgs.push('${t.toString()}$out');
+									}
 								default:
 									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
 							}
@@ -139,6 +144,20 @@ class ServiceMacro {
 			}
 		}
 		return fields;
+	}
+
+	private static function paramsToString(params : Array<haxe.macro.Type>) : String {
+		var parameterArgs = '';
+		for (param in params) {
+			switch(param) {
+				case TAbstract(t, params):
+					parameterArgs += '_' + t.toString().split('.').join('_');
+				case TInst(t, params):
+					parameterArgs += '_' + t.toString().split('.').join('_');
+				default:
+			}
+		}
+		return parameterArgs;
 	}
 
 	private static function getClassType(expr : ExprDef) : String {

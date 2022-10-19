@@ -6,7 +6,8 @@ final class Main {
             new lifetime.LifetimeTest(),
             new segregation.SegregationTest(),
             new destructable.DestructableTest(),
-            new binding.BindingTest()
+            new binding.BindingTest(),
+            new iterators.IteratorTest()
         ]);
     }
 }
