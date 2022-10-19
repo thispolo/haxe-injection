@@ -58,7 +58,7 @@ final class ServiceProvider implements Destructable {
 
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
-		var requestedService = requestedGroup.getServiceTypes().get(key);
+		var requestedService = requestedGroup.getServiceTypes().get(key)[0];
 		if (requestedService == null) {
 			throw new haxe.Exception('Service of type \'${serviceName}\' (${key}) not found.');
 		}
@@ -114,15 +114,30 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function buildDependencyTree(service:String):Service {
-		var dependencies = [];
+		var dependencies : Array<Dynamic> = [];
 		var args = getServiceArgs(service);
 		for (arg in args) {
-			var dependency = getRequestedService(arg);
-			if (dependency != null) {
-				var serviceInstance = handleServiceRequest(dependency);
-				dependencies.push(serviceInstance);
-				continue;
-			}
+				var reg = ~/Iterator\((.+)\)/;
+				switch (reg.match(arg)) {
+					case true:
+						var type = reg.matched(1);
+						var dependencyArray = getRequestedService(type);
+						if (dependencyArray != null) {
+							var iterator = [];
+							for(dependency in dependencyArray) {
+								iterator.push(handleServiceRequest(dependency));
+							}
+							dependencies.push(iterator.iterator());
+							continue;
+						}
+					case false:
+						var dependencyArray = getRequestedService(arg);
+						if (dependencyArray != null) {
+							var serviceInstance = handleServiceRequest(dependencyArray[0]);
+							dependencies.push(serviceInstance);
+							continue;
+						}
+				}
 
 			var config = getRequestedConfig(arg);
 			if (config != null) {
@@ -157,7 +172,7 @@ final class ServiceProvider implements Destructable {
 		return _requestedConfigs.get(config);
 	}
 
-	private function getRequestedService(serviceName:String):ServiceType {
+	private function getRequestedService(serviceName:String):Array<ServiceType> {
 		var serviceDefinition = serviceName.split('|');
 		var serviceName = serviceDefinition[0];
 		var key = (serviceDefinition[1] != null)
