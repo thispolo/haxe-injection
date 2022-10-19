@@ -1,5 +1,6 @@
 package iterators;
 
+import hx.injection.generics.Generic;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
@@ -31,4 +32,17 @@ final class IteratorTest extends utest.Test {
         Assert.equals(service.result(), 1);
     }
 
+    
+    public function testGeneric() {
+        var collection = new ServiceCollection();
+        collection.addSingleton(Generic.of(GenericDependency, Int));
+        collection.addSingleton(Generic.of(GenericDependency, Int));
+        collection.addSingleton(Generic.of(GenericDependency, Int));
+        collection.addSingleton(TestDependency);
+
+        var provider = collection.createProvider();
+        var service = provider.getService(TestDependency);
+
+        Assert.equals(service.doThing(), 3);
+    }
 }

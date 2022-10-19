@@ -8,7 +8,6 @@ final class SumDependency implements Service {
 
     public function new(dependencies : Iterator<Dependency>) {
         _dependencies = dependencies;
-        trace(_dependencies);
     }
 
 	public function result() : Int {
