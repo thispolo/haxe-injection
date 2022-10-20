@@ -100,7 +100,7 @@ class ServiceMacro {
 									if(argName == null) {
 										for (int in interfaces) {
 											if (int.t.toString() == t.toString()) {
-												throw 'Service: Argument ${argNum} of type \'${t.toString()}\' in ${classType.name} is recursive.';
+												Context.error('Service: Argument ${argNum} of type \'${t.toString()}\' in ${classType.name} is recursive.', pos);
 											}
 										}
 									}
@@ -121,9 +121,11 @@ class ServiceMacro {
 										}
 										out += ')';
 										constructorArgs.push('${t.toString()}$out');
+									} else {
+										Context.error('Injecting "$type" not supported by the DI container', pos);
 									}
 								default:
-									throw "Service Builder: Constructor parameter types must be either a class or an interface.";
+									Context.error("Service Builder: Constructor parameter types must be either a class or an interface.", pos);
 							}
 							argNum++;
 						}
