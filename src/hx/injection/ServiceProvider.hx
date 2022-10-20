@@ -117,7 +117,7 @@ final class ServiceProvider implements Destructable {
 		var dependencies : Array<Dynamic> = [];
 		var args = getServiceArgs(service);
 		for (arg in args) {
-				var reg = ~/Iterator\((.+)\)/;
+				var reg = ~/Iterable\((.+)\)/;
 				switch (reg.match(arg)) {
 					case true:
 						var type = reg.matched(1);
@@ -127,7 +127,7 @@ final class ServiceProvider implements Destructable {
 							for(dependency in dependencyArray) {
 								iterator.push(handleServiceRequest(dependency));
 							}
-							dependencies.push(iterator.iterator());
+							dependencies.push(iterator);
 							continue;
 						}
 					case false:

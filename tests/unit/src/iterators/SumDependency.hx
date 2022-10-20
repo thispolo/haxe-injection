@@ -4,9 +4,9 @@ import hx.injection.Service;
 
 final class SumDependency implements Service {
 
-    private var _dependencies : Iterator<Dependency>;
+    private var _dependencies : Iterable<Dependency>;
 
-    public function new(dependencies : Iterator<Dependency>) {
+    public function new(dependencies : Iterable<Dependency>) {
         _dependencies = dependencies;
     }
 

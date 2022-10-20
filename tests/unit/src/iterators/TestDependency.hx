@@ -4,9 +4,9 @@ import hx.injection.Service;
 
 final class TestDependency implements Service {
     
-    private var _dependencies : Iterator<GenericDependency<Int>>;
+    private var _dependencies : Iterable<GenericDependency<Int>>;
 
-    public function new(dependency : Iterator<GenericDependency<Int>>) {
+    public function new(dependency : Iterable<GenericDependency<Int>>) {
         _dependencies = dependency;
     }
 

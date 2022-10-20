@@ -110,7 +110,7 @@ class ServiceMacro {
 									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
 								case TType(t, params):
 									var type = t.toString();
-									if(type == 'Iterator') {
+									if(type == 'Iterable') {
 										var out = '(';
 										var param = params[0];
 										switch(param) {
