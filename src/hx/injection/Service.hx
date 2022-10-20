@@ -23,6 +23,7 @@ package hx.injection;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
+@:keepSub
 @:autoBuild(hx.injection.macros.ServiceMacro.build())
 interface Service {
 	@:allow(hx.injection.ServiceProvider)

@@ -28,6 +28,7 @@ import haxe.ds.StringMap;
 #if macro
 
 import haxe.macro.Context;
+import haxe.macro.Type.Ref;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassType;
 
@@ -172,15 +173,26 @@ class ServiceMacro {
 		return out;
 	}
 
-	private static function superClassIsService(type : ClassType) : Bool {
-		var superClass = type.superClass;
-		if(superClass != null) {
-			var superType = superClass.t.get();
-			for (int in superType.interfaces) {
+	private static function interfaceIsService(interfaces : Array<{t:Ref<ClassType>, params:Array<haxe.macro.Type>}>) : Bool {
+		var result = false;
+		if(interfaces != null) {
+			for (int in interfaces) {
 				var interfaceType = int.t.get();
 				if(interfaceType.name == 'Service') {
 					return true;
 				}
+				result = result || interfaceIsService(interfaceType.interfaces);
+			}
+		}
+		return result;
+	}
+
+	private static function superClassIsService(type : ClassType) : Bool {
+		var superClass = type.superClass;
+		if(superClass != null) {
+			var superType = superClass.t.get();
+			if(interfaceIsService(superType.interfaces)) {
+				return true;
 			}
 			return superClassIsService(superType);
 		} else return false;
