@@ -1,5 +1,6 @@
 package hx.injection;
 
+import hx.injection.generics.GenericDefinition;
 import hx.injection.Destructable;
 import haxe.ds.StringMap;
 
@@ -51,7 +52,7 @@ final class ServiceProvider implements Destructable {
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
+	overload public inline extern function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
 
@@ -73,6 +74,30 @@ final class ServiceProvider implements Destructable {
 	}
 
 	/**
+		Fetch a service implementation by its abstraction.
+	**/
+	overload public inline extern function getService<S:Service>(service:GenericDefinition<S>, ?binding : Null<Class<S>>):S {
+		var serviceName = service.signature;
+		var requestedGroup = _requestedServices.get(serviceName);
+
+		var requestedService = null;
+		switch(binding) {
+			case null:
+				requestedService = requestedGroup.getServices()[0];
+			default:
+				requestedService = requestedGroup.getServiceAtKey(Type.getClassName(binding));
+		}
+		
+		if (requestedService == null) {
+			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
+		}
+
+		var implementation = handleServiceRequest(requestedService);
+
+		return Std.downcast(implementation, service.basetype);
+	}
+
+	/**
 		Create a new scope on the provider.
 	**/
 	public function newScope() : ServiceProvider {
@@ -81,7 +106,7 @@ final class ServiceProvider implements Destructable {
 		return this;
 	}
 
-	private function handleServiceRequest(serviceType:ServiceType):Service {
+	private function handleServiceRequest(serviceType:InternalServiceType):Service {
 		switch (serviceType) {
 			case Singleton(implementation):
 				return handleSingletonService(implementation);
@@ -186,7 +211,7 @@ final class ServiceProvider implements Destructable {
 		return _requestedConfigs.get(config);
 	}
 
-	private function getRequestedService(serviceName:String):Array<ServiceType> {
+	private function getRequestedService(serviceName:String):Array<InternalServiceType> {
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
 			return requested.getServices();
@@ -194,7 +219,7 @@ final class ServiceProvider implements Destructable {
 		return null;
 	}
 
-	private function getBoundService(serviceName:String, key : String):ServiceType {
+	private function getBoundService(serviceName:String, key : String):InternalServiceType {
 		var requested = _requestedServices.get(serviceName);
 		
 		return requested.getServiceAtKey(key);

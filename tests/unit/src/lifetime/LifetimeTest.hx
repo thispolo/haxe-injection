@@ -3,6 +3,8 @@ package lifetime;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class LifetimeTest extends utest.Test {
     
     public function testSingletonEqual() {

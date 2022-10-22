@@ -24,7 +24,7 @@ package hx.injection;
 	SOFTWARE.
  */
 enum ServiceType {
-	Singleton(implementation:String);
-	Transient(implementation:String);
-	Scoped(implementation:String);
+	Singleton;
+	Transient;
+	Scoped;
 }

@@ -6,6 +6,8 @@ import utest.Assert;
 import hx.injection.ServiceCollection;
 import hx.injection.generics.Generic;
 
+using hx.injection.ServiceExtensions;
+
 final class GenericTest extends utest.Test {
     
     public function testGenerics() {
@@ -13,7 +15,7 @@ final class GenericTest extends utest.Test {
         collection.addSingleton(Generic.of(GenericDependency, Int), TestDependency);
 
         var provider = collection.createProvider();
-        var service = provider.getService(GenericDependency);
+        var service = provider.getService(Generic.of(GenericDependency, Int));
 
         Assert.equals(service.getObject(), 5);
     }

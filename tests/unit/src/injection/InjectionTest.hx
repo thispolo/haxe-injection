@@ -3,6 +3,8 @@ package injection;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class InjectionTest extends utest.Test {
     
     public function testLoudInjection() {

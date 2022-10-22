@@ -3,6 +3,8 @@ package segregation;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class SegregationTest extends utest.Test {
     
     public function testSegregation() {
