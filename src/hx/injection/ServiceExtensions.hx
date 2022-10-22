@@ -41,7 +41,7 @@ final class ServiceExtensions {
             collection.addService(ServiceType.Singleton, implementation, implementation.basetype);
     }
 
-    // Transients:i unno 
+    // Transients:
     overload static public extern inline function addTransient<T : Service, V : T>(collection : ServiceCollection, service : Class<T>, implementation : Class<V>) : ServiceConfig {
         return collection.addService(ServiceType.Transient, service, implementation);
     }
@@ -56,6 +56,26 @@ final class ServiceExtensions {
 
     overload static public extern inline function addTransient<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : ServiceConfig {
         return collection.addService(ServiceType.Transient, implementation, implementation.basetype);
+    }
+    
+    overload static public extern inline function addTransientProtected<T : Service, V : T>(collection : ServiceCollection, service : Class<T>, implementation : Class<V>) : Void {
+        if(!collection.has(service))
+            collection.addService(ServiceType.Transient, service, implementation);
+    }
+
+    overload static public extern inline function addTransientProtected<T : Service>(collection : ServiceCollection, implementation : Class<T>) : Void {
+        if(!collection.has(implementation))
+            collection.addService(ServiceType.Transient, implementation, implementation);
+    }
+
+    overload static public extern inline function addTransientProtected<T : Service, V : T>(collection : ServiceCollection, service : GenericDefinition<T>, implementation : Class<V>) : Void {
+        if(!collection.has(service))
+            collection.addService(ServiceType.Transient, service, implementation);
+    }
+
+    overload static public extern inline function addTransientProtected<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : Void {
+        if(!collection.has(implementation))
+            collection.addService(ServiceType.Transient, implementation, implementation.basetype);
     }
     
     // Scoped:
@@ -75,4 +95,23 @@ final class ServiceExtensions {
         return collection.addService(ServiceType.Scoped, implementation, implementation.basetype);
     }
     
+    overload static public extern inline function addScopedProtected<T : Service, V : T>(collection : ServiceCollection, service : Class<T>, implementation : Class<V>) : Void {
+        if(!collection.has(service))
+            collection.addService(ServiceType.Scoped, service, implementation);
+    }
+
+    overload static public extern inline function addScopedProtected<T : Service>(collection : ServiceCollection, implementation : Class<T>) : Void {
+        if(!collection.has(implementation))
+            collection.addService(ServiceType.Scoped, implementation, implementation);
+    }
+
+    overload static public extern inline function addScopedProtected<T : Service, V : T>(collection : ServiceCollection, service : GenericDefinition<T>, implementation : Class<V>) : Void {
+        if(!collection.has(service))
+            collection.addService(ServiceType.Scoped, service, implementation);
+    }
+
+    overload static public extern inline function addScopedProtected<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : Void {
+        if(!collection.has(implementation))
+            collection.addService(ServiceType.Scoped, implementation, implementation.basetype);
+    }
 }

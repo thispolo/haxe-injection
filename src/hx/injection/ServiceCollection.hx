@@ -61,8 +61,15 @@ class ServiceCollection {
 	/**
 		Check if the service has an implementation assigned to it
 	**/
-	public function has<T:Service>(service:Class<T>) : Bool {
+	overload public inline extern function has<T:Service>(service:Class<T>) : Bool {
 		return _requestedServices.exists(Type.getClassName(service));
+	}
+
+	/**
+		Check if the service has an implementation assigned to it
+	**/
+	overload public inline extern function has<T:Service>(service:GenericDefinition<T>) : Bool {
+		return _requestedServices.exists(service.signature);
 	}
 
 	private function handleServiceAdd<T:Service>(type : ServiceType, name : String, implementation:Class<T>):ServiceConfig {
