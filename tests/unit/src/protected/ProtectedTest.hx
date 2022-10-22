@@ -9,8 +9,8 @@ final class ProtectedTest extends utest.Test {
     
     public function testSingletonEqual() {
         var collection = new ServiceCollection();
-        collection.addSingleton(Dependency, MyDependency);
-        collection.addSingleton(Dependency, OtherDependency);
+        collection.addSingletonProtected(Dependency, MyDependency);
+        collection.addSingletonProtected(Dependency, OtherDependency);
 
         var provider = collection.createProvider();
         var dependencies = provider.getServices(Dependency);
