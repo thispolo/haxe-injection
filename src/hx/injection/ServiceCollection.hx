@@ -81,6 +81,8 @@ class ServiceCollection {
 		Create the service provider to use the defined service collection in order to generate concrete implementations of services.
 	**/
 	public function createProvider() : ServiceProvider {
+		addService(ServiceType.Singleton, ServiceProvider, ServiceProvider);
+
 		var provider = new ServiceProvider(_configs, cast _requestedServices);
 
 		return provider;

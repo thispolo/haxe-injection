@@ -27,7 +27,7 @@ import haxe.ds.StringMap;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-final class ServiceProvider implements Destructable {
+final class ServiceProvider implements Destructable implements Service {
 
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
@@ -47,6 +47,14 @@ final class ServiceProvider implements Destructable {
 		
 		_resolvedScopeOrder = new Array();
 		_resolvedScopes = new StringMap();
+
+		registerSelf();
+	}
+
+	private function registerSelf() {
+		var name = Type.getClassName(ServiceProvider);
+		_resolvedSingletonOrder.push(name);
+		_resolvedSingletons.set(name, this);
 	}
 
 	/**
@@ -56,6 +64,7 @@ final class ServiceProvider implements Destructable {
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
 
+		trace(serviceName);
 		var requestedService = null;
 		switch(binding) {
 			case null:
@@ -238,7 +247,7 @@ final class ServiceProvider implements Destructable {
 	private function destroySingletons() : Void {
 		for(key in _resolvedSingletonOrder) {
 			var singleton = _resolvedSingletons.get(key);
-			if(Std.isOfType(singleton, Destructable)) {
+			if(Std.isOfType(singleton, Destructable) && singleton != this) {
 				cast(singleton, Destructable).destroy();
 			}
 		}
