@@ -52,15 +52,19 @@ final class ServiceProvider implements Destructable {
 		Fetch a service implementation by its abstraction.
 	**/
 	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
-		var key = (binding == null)
-			? ServiceProvider.DefaultType
-			: Type.getClassName(binding);
-
 		var serviceName = Type.getClassName(service);
 		var requestedGroup = _requestedServices.get(serviceName);
-		var requestedService = requestedGroup.getServiceTypes().get(key);
+
+		var requestedService = null;
+		switch(binding) {
+			case null:
+				requestedService = requestedGroup.getServices()[0];
+			default:
+				requestedService = requestedGroup.getServiceAtKey(Type.getClassName(binding));
+		}
+		
 		if (requestedService == null) {
-			throw new haxe.Exception('Service of type \'${serviceName}\' (${key}) not found.');
+			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
 		}
 
 		var implementation = handleServiceRequest(requestedService);
@@ -114,15 +118,40 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function buildDependencyTree(service:String):Service {
-		var dependencies = [];
+		var dependencies : Array<Dynamic> = [];
 		var args = getServiceArgs(service);
 		for (arg in args) {
-			var dependency = getRequestedService(arg);
-			if (dependency != null) {
-				var serviceInstance = handleServiceRequest(dependency);
-				dependencies.push(serviceInstance);
-				continue;
-			}
+				var reg = ~/Iterable\((.+)\)/;
+				switch (reg.match(arg)) {
+					case true:
+						var type = reg.matched(1);
+						var dependencyArray = getRequestedService(type);
+						if (dependencyArray != null) {
+							var iterator = [];
+							for(dependency in dependencyArray) {
+								iterator.push(handleServiceRequest(dependency));
+							}
+							dependencies.push(iterator);
+							continue;
+						}
+					case false:
+						var binding = arg.split('|');
+						var serviceType = null;
+						switch(binding.length) {
+							case 2:
+								serviceType = getBoundService(binding[0], binding[1]);
+							default:
+								serviceType = getRequestedService(arg) != null 
+								? getRequestedService(arg)[0] 
+								: null;
+						}
+						
+						if (serviceType != null) {
+							var serviceInstance = handleServiceRequest(serviceType);
+							dependencies.push(serviceInstance);
+							continue;
+						}
+				}
 
 			var config = getRequestedConfig(arg);
 			if (config != null) {
@@ -157,18 +186,18 @@ final class ServiceProvider implements Destructable {
 		return _requestedConfigs.get(config);
 	}
 
-	private function getRequestedService(serviceName:String):ServiceType {
-		var serviceDefinition = serviceName.split('|');
-		var serviceName = serviceDefinition[0];
-		var key = (serviceDefinition[1] != null)
-			? serviceDefinition[1] 
-			: ServiceProvider.DefaultType;
-
+	private function getRequestedService(serviceName:String):Array<ServiceType> {
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
-			return requested.getServiceTypes().get(key);
+			return requested.getServices();
 		}
 		return null;
+	}
+
+	private function getBoundService(serviceName:String, key : String):ServiceType {
+		var requested = _requestedServices.get(serviceName);
+		
+		return requested.getServiceAtKey(key);
 	}
 
 	public function destroy() : Void {

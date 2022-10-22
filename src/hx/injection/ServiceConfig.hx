@@ -40,6 +40,6 @@ final class ServiceConfig {
 		This can then be used to inject this specific implementation into a given class using the `@:binding` metadata.
 	**/
 	public function asBinding() {
-		_definition.add(_type, _implementation);
+		_definition.setBinding(_type);
 	}
 }

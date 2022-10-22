@@ -4,6 +4,7 @@ import haxe.ds.StringMap;
 
 interface ServiceGroup {
 
-    public function getServiceTypes() : StringMap<ServiceType>;
+    public function getServices() : Array<ServiceType>;
+    public function getServiceAtKey(key : String) : ServiceType;
 
 }
