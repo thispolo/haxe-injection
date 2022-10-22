@@ -4,22 +4,27 @@ import haxe.ds.StringMap;
 
 final class ServiceDefinition implements ServiceGroup {
 
-    private var _types : StringMap<Array<ServiceType>>;
+    private var _bindings : StringMap<Int>;
+    private var _services : Array<ServiceType>;
 
     public function new() {
-        _types = new StringMap();
+        _bindings = new StringMap();
+        _services = new Array();
     }
 
-    public function add(key : String, type : ServiceType) : Void {
-        var serviceArray = _types.get(key);
-        if(serviceArray == null) {
-            serviceArray = [];
-            _types.set(key, serviceArray);
-        }
-        serviceArray.push(type);
+    public function add(type : ServiceType) : Void {
+        _services.push(type);
     }
 
-    public function getServiceTypes() : StringMap<Array<ServiceType>> {
-        return _types;
+    public function setBinding(key : String) : Void {
+        _bindings.set(key, _services.length-1);
+    }
+
+    public function getServices() : Array<ServiceType> {
+        return _services;
+    }
+
+    public function getServiceAtKey(key : String) : ServiceType {
+        return _services[_bindings.get(key)];
     }
 }

@@ -133,7 +133,7 @@ class ServiceCollection {
 		var implementationType = addAs(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
-		definition.add(ServiceProvider.DefaultType, implementationType);
+		definition.add(implementationType);
 
 		return new ServiceConfig(definition, Type.getClassName(implementation), implementationType);
 	}
@@ -143,7 +143,7 @@ class ServiceCollection {
 		var implementationType = addAs(Type.getClassName(implementation));
 		var definition = initialiseDefinition(serviceName);
 
-		definition.add(ServiceProvider.DefaultType, implementationType);
+		definition.add(implementationType);
 
 		return new ServiceConfig(definition, Type.getClassName(implementation), implementationType);
 	}
