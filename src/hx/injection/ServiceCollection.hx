@@ -58,6 +58,13 @@ class ServiceCollection {
 		return handleServiceAdd(type, service.signature, implementation);
 	}
 
+	/**
+		Check if the service has an implementation assigned to it
+	**/
+	public function has<T:Service>(service:Class<T>) : Bool {
+		return _requestedServices.exists(Type.getClassName(service));
+	}
+
 	private function handleServiceAdd<T:Service>(type : ServiceType, name : String, implementation:Class<T>):ServiceConfig {
 		var serviceName = name;
 		var implementationName = Type.getClassName(implementation);

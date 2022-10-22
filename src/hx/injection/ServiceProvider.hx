@@ -61,10 +61,34 @@ final class ServiceProvider implements Destructable implements Service {
 		Fetch a service implementation by its abstraction.
 	**/
 	overload public inline extern function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
-		var serviceName = Type.getClassName(service);
+		return handleGetService(Type.getClassName(service), service, binding);
+	}
+
+	/**
+		Fetch a service implementation by its abstraction.
+	**/
+	overload public inline extern function getService<S:Service>(service:GenericDefinition<S>, ?binding : Null<Class<S>>):S {
+		return handleGetService(service.signature, service.basetype, binding);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:Class<S>):Iterable<S> {
+		return handleGetServices(Type.getClassName(service), service);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:GenericDefinition<S>):Iterable<S> {
+		return handleGetServices(service.signature, service.basetype);
+	}
+
+	private function handleGetService<S:Service>(name : String, service:Class<S>, ?binding : Null<Class<S>>):S {
+		var serviceName = name;
 		var requestedGroup = _requestedServices.get(serviceName);
 
-		trace(serviceName);
 		var requestedService = null;
 		switch(binding) {
 			case null:
@@ -82,28 +106,22 @@ final class ServiceProvider implements Destructable implements Service {
 		return Std.downcast(implementation, service);
 	}
 
-	/**
-		Fetch a service implementation by its abstraction.
-	**/
-	overload public inline extern function getService<S:Service>(service:GenericDefinition<S>, ?binding : Null<Class<S>>):S {
-		var serviceName = service.signature;
+	private function handleGetServices<S:Service>(name : String, service:Class<S>):Iterable<S> {
+		var serviceName = name;
 		var requestedGroup = _requestedServices.get(serviceName);
 
-		var requestedService = null;
-		switch(binding) {
-			case null:
-				requestedService = requestedGroup.getServices()[0];
-			default:
-				requestedService = requestedGroup.getServiceAtKey(Type.getClassName(binding));
-		}
+		var services = [];
+		var requestedServices = requestedGroup.getServices();
 		
-		if (requestedService == null) {
+		if (requestedServices == null) {
 			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
 		}
 
-		var implementation = handleServiceRequest(requestedService);
-
-		return Std.downcast(implementation, service.basetype);
+		for(service in requestedServices) {
+			services.push(handleServiceRequest(service));
+		}
+		
+		return cast services;
 	}
 
 	/**

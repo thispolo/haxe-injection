@@ -13,9 +13,10 @@ final class ProtectedTest extends utest.Test {
         collection.addSingleton(Dependency, OtherDependency);
 
         var provider = collection.createProvider();
-        var dependency = provider.getService(Dependency);
-      
-        Assert.equals(dependency.id(), 5);
+        var dependencies = provider.getServices(Dependency);
+        var array = Lambda.array(dependencies);
+
+        Assert.equals(1, array.length);
     }
 
 }

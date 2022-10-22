@@ -8,7 +8,8 @@ final class Main {
             new destructable.DestructableTest(),
             new binding.BindingTest(),
             new iterators.IteratorTest(),
-            new generic.GenericTest()
+            new generic.GenericTest(),
+            new protected.ProtectedTest()
         ]);
     }
 }
