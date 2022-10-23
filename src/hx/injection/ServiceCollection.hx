@@ -31,10 +31,12 @@ class ServiceCollection {
 
 	private var _configs : StringMap<Any>;
 	private var _requestedServices : StringMap<ServiceDefinition>;
+	private var _instancedServices : StringMap<Service>;
 
 	public function new() {
 		_configs = new StringMap();
 		_requestedServices = new StringMap();
+		_instancedServices = new StringMap();
 	}
 
 	/**
@@ -49,6 +51,13 @@ class ServiceCollection {
 	**/
 	overload public inline extern function addService<T:Service, V:T>(type : ServiceType, service:Class<T>, implementation:Class<V>):ServiceConfig {
 		return handleServiceAdd(type, Type.getClassName(service), implementation);
+	}
+
+	/**
+		Add an instance of a service to the collection.
+	**/
+	overload public inline extern function addService<T:Service, V:T>(service:Class<T>, implementation:V):Void {
+		handleInstanceAdd(service, implementation);
 	}
 
 	/**
@@ -91,13 +100,18 @@ class ServiceCollection {
 		return new ServiceConfig(definition, Type.getClassName(implementation), implementationType);
 	}
 
+	private function handleInstanceAdd<T:Service, V:T>(service:Class<T>, instance : V) : Void {
+		var serviceName = Type.getClassName(service);
+
+		_instancedServices.set(serviceName, instance);
+	}
 	/**
 		Create the service provider to use the defined service collection in order to generate concrete implementations of services.
 	**/
 	public function createProvider() : ServiceProvider {
 		addService(ServiceType.Singleton, ServiceProvider, ServiceProvider);
 
-		var provider = new ServiceProvider(_configs, cast _requestedServices);
+		var provider = new ServiceProvider(_configs, cast _requestedServices, _instancedServices);
 
 		return provider;
 	}
