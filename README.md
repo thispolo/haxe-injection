@@ -11,6 +11,7 @@ A dependency injection container for Haxe. Supports singleton, transient, and sc
 - Lifecycle management through `Destructable` interface
 - Basic handling of services with type parameters
 - Concrete self-binding
+- Iterable support
 
 ## Overview
 
@@ -114,7 +115,62 @@ While this may seem overkill for a simple application such as this, the true ben
 
 Furthermore, this approach satisfies the SOLID principles and prevents platform-specific branching from being hidden away in functions; here it is exposed at the top level in the [**composition root**](https://blog.ploeh.dk/2011/07/28/CompositionRoot/) (in this case, `Main`) and makes it very obvious what the capabilities of your application are. It also makes for extending your application to new platforms trivial.
 
-## Other features
+## Hopes and dreams
+- Allow for configuration encryption and different configuration implementations per platform
+- Move away from reflection and build the dependency trees at compile time using macros
+- Convince the Haxe Foundation to add a DI container to the standard library
+
+## Additional features
+
+### Iterables
+It is possible to add services of the same type to a collection by simply registering multiple dependencies like so:
+
+```haxe
+    public static function main() {
+        var collection = new ServiceCollection();
+
+        collection.addSingleton(MyService, ConcreteService1);
+        collection.addSingleton(MyService, ConcreteService2);
+        collection.addSingleton(SomeService);
+
+        var provider = collection.createProvider();
+    }
+```
+
+During constructor resolution, if you reference the type via an iterable like so:
+
+```haxe
+    final class SomeService implements Service {
+        public function new(services : Iterable<MyService>) {
+            trace(services);
+        }
+    }
+```
+it will resolve to an iterator of all implementations of that service, i.e. `[ConcreteService1, ConcreteService2]`.
+
+### Provider injection
+Occasionally useful for resolving scoped services such as in web applications and event busses, one can inject the ServiceProvider itself into any dependency:
+```haxe
+    final class SomeService implements Service {
+        public function new(provider : ServiceProvider) {
+            trace(provider); // Singleton instance of the provider as created by the collection
+        }
+    }
+```
+This should be avoided lest we stumble into the [Service Locator anti-pattern](https://stackoverflow.com/questions/22795459/is-servicelocator-an-anti-pattern).
+
+### Instanced services
+One can construct a service and add it to the collection like so:
+
+```haxe
+    public static function main() {
+        var collection = new ServiceCollection();
+
+        collection.addSingleton(MyService, new ConcreteService());
+
+        var provider = collection.createProvider();
+    }
+```
 
 ### Configuration files
 It is useful to be able to configure our application with respect to a collection of `.json` files and environment variables. This can be done by adding a folder of a chosen name to your project root, and then pointing to the root using the configuration builder like so:
@@ -234,9 +290,3 @@ class MyFirstService implements SomeService implements Destructable {
 ```
 
 will have `Destroy()` called when the provider goes out of scope or is itself destroyed.
-
-## Future features
-- Allow for optionally adding services using callbacks for setting optional arguments
-- Allow implementations to depend on iterators of service types
-- Allow for configuration encryption and different configuration implementations per platform
-- Fully support the `@:generic` metadata

@@ -2,3 +2,4 @@ build.hxml
 bin/
 .vscode/
 .unittest/
+unit.code-workspace
