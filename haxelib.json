@@ -4,11 +4,11 @@
    "license": "MIT",
    "classPath": "src/",
    "tags": [
-      "utility", "cross", "injection", "dependency", "IoC", "DI"
+      "utility", "cross", "injection", "dependency", "IoC", "DI", "Container"
    ],
    "description": "A dependency injection container for Haxe",
    "contributors": ["PaulSGCross"],
    "releasenote": "See https://github.com/thispolo/haxe-injection/blob/main/CHANGELOG.md",
-   "version": "2.1.0",
+   "version": "3.0.0",
    "dependencies": { }
 }
