@@ -3,6 +3,8 @@ package binding;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class BindingTest extends utest.Test {
     
     public function testBinding() {

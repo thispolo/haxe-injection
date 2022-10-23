@@ -3,6 +3,8 @@ package destructable;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class DestructableTest extends utest.Test {
     
     public function testSingletonCreated() {

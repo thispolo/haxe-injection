@@ -88,48 +88,50 @@ class ServiceMacro {
 					}
 				}
 				
-				switch (field.kind) {
-					case FFun(f):
-						var argNum = 1;
-						for (arg in f.args) {
-							var type = Context.resolveType(arg.type, pos);
-							switch (type) {
-								case TInst(t, params):
-									var argName = names.get(arg.name);
+				if(classType.name != 'ServiceProvider') {
+					switch (field.kind) {
+						case FFun(f):
+							var argNum = 1;
+							for (arg in f.args) {
+								var type = Context.resolveType(arg.type, pos);
+								switch (type) {
+									case TInst(t, params):
+										var argName = names.get(arg.name);
 
-									if(argName == null) {
-										for (int in interfaces) {
-											if (int.t.toString() == t.toString()) {
-												Context.error('Service: Argument ${argNum} of type \'${t.toString()}\' in ${classType.name} is recursive.', pos);
+										if(argName == null) {
+											for (int in interfaces) {
+												if (int.t.toString() == t.toString()) {
+													Context.error('Service: Argument ${argNum} of type \'${t.toString()}\' in ${classType.name} is recursive.', pos);
+												}
 											}
 										}
-									}
 
-									var parameterArgs = paramsToString(params);
-									
-									var serviceName = argName != null? '|' + argName : '';
-									constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
-								case TType(t, params):
-									var type = t.toString();
-									if(type == 'Iterable') {
-										var out = '(';
-										var param = params[0];
-										switch(param) {
-											case TInst(t, params):
-												out += t.toString() + paramsToString(params);
-											default:
+										var parameterArgs = paramsToString(params);
+										
+										var serviceName = argName != null? '|' + argName : '';
+										constructorArgs.push('${t.toString()}${parameterArgs}${serviceName}');
+									case TType(t, params):
+										var type = t.toString();
+										if(type == 'Iterable') {
+											var out = '(';
+											var param = params[0];
+											switch(param) {
+												case TInst(t, params):
+													out += t.toString() + paramsToString(params);
+												default:
+											}
+											out += ')';
+											constructorArgs.push('${t.toString()}$out');
+										} else {
+											Context.error('Injecting "$type" not supported by the DI container', pos);
 										}
-										out += ')';
-										constructorArgs.push('${t.toString()}$out');
-									} else {
-										Context.error('Injecting "$type" not supported by the DI container', pos);
-									}
-								default:
-									Context.error("Service Builder: Constructor parameter types must be either a class or an interface.", pos);
+									default:
+										Context.error("Service Builder: Constructor parameter types must be either a class or an interface.", pos);
+								}
+								argNum++;
 							}
-							argNum++;
-						}
-					default:
+						default:
+					}
 				}
 				
 				var access = [Access.APrivate];

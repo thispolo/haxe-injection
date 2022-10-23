@@ -4,6 +4,8 @@ import hx.injection.generics.Generic;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class IteratorTest extends utest.Test {
     
     public function testIterators() {

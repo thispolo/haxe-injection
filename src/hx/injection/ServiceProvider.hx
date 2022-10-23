@@ -1,5 +1,6 @@
 package hx.injection;
 
+import hx.injection.generics.GenericDefinition;
 import hx.injection.Destructable;
 import haxe.ds.StringMap;
 
@@ -26,7 +27,7 @@ import haxe.ds.StringMap;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
  */
-final class ServiceProvider implements Destructable {
+final class ServiceProvider implements Destructable implements Service {
 
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
@@ -46,13 +47,46 @@ final class ServiceProvider implements Destructable {
 		
 		_resolvedScopeOrder = new Array();
 		_resolvedScopes = new StringMap();
+
+		registerSelf();
+	}
+
+	private function registerSelf() {
+		var name = Type.getClassName(ServiceProvider);
+		_resolvedSingletonOrder.push(name);
+		_resolvedSingletons.set(name, this);
 	}
 
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
-		var serviceName = Type.getClassName(service);
+	overload public inline extern function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
+		return handleGetService(Type.getClassName(service), service, binding);
+	}
+
+	/**
+		Fetch a service implementation by its abstraction.
+	**/
+	overload public inline extern function getService<S:Service>(service:GenericDefinition<S>, ?binding : Null<Class<S>>):S {
+		return handleGetService(service.signature, service.basetype, binding);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:Class<S>):Iterable<S> {
+		return handleGetServices(Type.getClassName(service), service);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:GenericDefinition<S>):Iterable<S> {
+		return handleGetServices(service.signature, service.basetype);
+	}
+
+	private function handleGetService<S:Service>(name : String, service:Class<S>, ?binding : Null<Class<S>>):S {
+		var serviceName = name;
 		var requestedGroup = _requestedServices.get(serviceName);
 
 		var requestedService = null;
@@ -72,6 +106,24 @@ final class ServiceProvider implements Destructable {
 		return Std.downcast(implementation, service);
 	}
 
+	private function handleGetServices<S:Service>(name : String, service:Class<S>):Iterable<S> {
+		var serviceName = name;
+		var requestedGroup = _requestedServices.get(serviceName);
+
+		var services = [];
+		var requestedServices = requestedGroup.getServices();
+		
+		if (requestedServices == null) {
+			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
+		}
+
+		for(service in requestedServices) {
+			services.push(handleServiceRequest(service));
+		}
+		
+		return cast services;
+	}
+
 	/**
 		Create a new scope on the provider.
 	**/
@@ -81,7 +133,7 @@ final class ServiceProvider implements Destructable {
 		return this;
 	}
 
-	private function handleServiceRequest(serviceType:ServiceType):Service {
+	private function handleServiceRequest(serviceType:InternalServiceType):Service {
 		switch (serviceType) {
 			case Singleton(implementation):
 				return handleSingletonService(implementation);
@@ -186,7 +238,7 @@ final class ServiceProvider implements Destructable {
 		return _requestedConfigs.get(config);
 	}
 
-	private function getRequestedService(serviceName:String):Array<ServiceType> {
+	private function getRequestedService(serviceName:String):Array<InternalServiceType> {
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
 			return requested.getServices();
@@ -194,7 +246,7 @@ final class ServiceProvider implements Destructable {
 		return null;
 	}
 
-	private function getBoundService(serviceName:String, key : String):ServiceType {
+	private function getBoundService(serviceName:String, key : String):InternalServiceType {
 		var requested = _requestedServices.get(serviceName);
 		
 		return requested.getServiceAtKey(key);
@@ -213,7 +265,7 @@ final class ServiceProvider implements Destructable {
 	private function destroySingletons() : Void {
 		for(key in _resolvedSingletonOrder) {
 			var singleton = _resolvedSingletons.get(key);
-			if(Std.isOfType(singleton, Destructable)) {
+			if(Std.isOfType(singleton, Destructable) && singleton != this) {
 				cast(singleton, Destructable).destroy();
 			}
 		}

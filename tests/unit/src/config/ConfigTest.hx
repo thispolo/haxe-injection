@@ -5,6 +5,8 @@ import hx.injection.ServiceCollection;
 import haxe.Json;
 import hx.injection.config.Configuration;
 
+using hx.injection.ServiceExtensions;
+
 final class ConfigTest extends utest.Test {
     
     public function testConfiguredService() {
