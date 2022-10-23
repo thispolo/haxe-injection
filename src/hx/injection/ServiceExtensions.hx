@@ -14,8 +14,8 @@ final class ServiceExtensions {
     /**
         Add singleton service to the service collection. A singleton is always the same instance on every resolution.
     **/
-    overload static public extern inline function addSingleton<T : Service>(collection : ServiceCollection, implementation : Class<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Singleton, implementation, implementation);
+    overload static public extern inline function addSingleton<T : Service>(collection : ServiceCollection, implementation : Class<T>) : Void {
+        collection.addService(ServiceType.Singleton, implementation, implementation);
     }
 
     /**
@@ -28,8 +28,8 @@ final class ServiceExtensions {
     /**
         Add singleton service to the service collection. A singleton is always the same instance on every resolution.
     **/
-    overload static public extern inline function addSingleton<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Singleton, implementation, implementation.basetype);
+    overload static public extern inline function addSingleton<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : Void {
+        collection.addService(ServiceType.Singleton, implementation, implementation.basetype);
     }
 
     /**
@@ -74,8 +74,8 @@ final class ServiceExtensions {
     /**
         Add transient service to the service collection. A transient is a new instance on every resolution.
     **/
-    overload static public extern inline function addTransient<T : Service>(collection : ServiceCollection, implementation : Class<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Transient, implementation, implementation);
+    overload static public extern inline function addTransient<T : Service>(collection : ServiceCollection, implementation : Class<T>) : Void {
+        collection.addService(ServiceType.Transient, implementation, implementation);
     }
 
     /**
@@ -88,8 +88,8 @@ final class ServiceExtensions {
     /**
         Add transient service to the service collection. A transient is a new instance on every resolution.
     **/
-    overload static public extern inline function addTransient<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Transient, implementation, implementation.basetype);
+    overload static public extern inline function addTransient<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : Void {
+        collection.addService(ServiceType.Transient, implementation, implementation.basetype);
     }
     
     /**
@@ -134,8 +134,8 @@ final class ServiceExtensions {
     /**
         Add scoped service to the service collection. A scoped is the same instance per scope.
     **/
-    overload static public extern inline function addScoped<T : Service>(collection : ServiceCollection, implementation : Class<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Scoped, implementation, implementation);
+    overload static public extern inline function addScoped<T : Service>(collection : ServiceCollection, implementation : Class<T>) : Void {
+        collection.addService(ServiceType.Scoped, implementation, implementation);
     }
 
     /**
@@ -148,8 +148,8 @@ final class ServiceExtensions {
     /**
         Add scoped service to the service collection. A scoped is the same instance per scope.
     **/
-    overload static public extern inline function addScoped<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : ServiceConfig {
-        return collection.addService(ServiceType.Scoped, implementation, implementation.basetype);
+    overload static public extern inline function addScoped<T : Service>(collection : ServiceCollection, implementation : GenericDefinition<T>) : Void {
+        collection.addService(ServiceType.Scoped, implementation, implementation.basetype);
     }
     
     /**

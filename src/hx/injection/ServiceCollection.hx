@@ -54,7 +54,7 @@ class ServiceCollection {
 	}
 
 	/**
-		Add a service to the collection.
+		Add an instance of a service to the collection.
 	**/
 	overload public inline extern function addService<T:Service, V:T>(service:Class<T>, implementation:V):Void {
 		handleInstanceAdd(service, implementation);

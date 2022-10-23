@@ -58,14 +58,14 @@ final class InjectionTest extends utest.Test {
         Assert.equals(injected.say('World!'), 'HelloWorld!');
     }
     
-    // public function testInstanceSelfBinding() {
-    //     var collection = new ServiceCollection();
-    //     collection.addSingleton(new InstanceService('Hello'));
+    public function testInstanceSelfBinding() {
+        var collection = new ServiceCollection();
+        collection.addService(InstanceService, new InstanceService('Hello'));
         
-    //     var provider = collection.createProvider();
-    //     var injected = provider.getService(InstanceService);
+        var provider = collection.createProvider();
+        var injected = provider.getService(InstanceService);
         
-    //     Assert.equals(injected.say('World!'), 'HelloWorld!');
-    // }
+        Assert.equals(injected.say('World!'), 'HelloWorld!');
+    }
     
 }
