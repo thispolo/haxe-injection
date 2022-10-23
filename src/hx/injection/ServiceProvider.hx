@@ -31,6 +31,7 @@ final class ServiceProvider implements Destructable implements Service {
 
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
+	private var _requestedInstances:StringMap<Service>;
 
 	private var _resolvedSingletonOrder : Array<String>;
 	private var _resolvedSingletons : StringMap<Service>;
@@ -38,9 +39,10 @@ final class ServiceProvider implements Destructable implements Service {
 	private var _resolvedScopeOrder : Array<String>;
 	private var _resolvedScopes : StringMap<Service>;
 
-	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
+	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>, instances : StringMap<Service>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
+		_requestedInstances = instances;
 
 		_resolvedSingletonOrder = new Array();
 		_resolvedSingletons = new StringMap();
@@ -87,8 +89,11 @@ final class ServiceProvider implements Destructable implements Service {
 
 	private function handleGetService<S:Service>(name : String, service:Class<S>, ?binding : Null<Class<S>>):S {
 		var serviceName = name;
-		var requestedGroup = _requestedServices.get(serviceName);
+		var instance = _requestedInstances.get(name);
+		if(instance != null)
+			return Std.downcast(instance, service);
 
+		var requestedGroup = _requestedServices.get(serviceName);
 		var requestedService = null;
 		switch(binding) {
 			case null:
