@@ -3,18 +3,20 @@ package binding;
 import utest.Assert;
 import hx.injection.ServiceCollection;
 
+using hx.injection.ServiceExtensions;
+
 final class BindingTest extends utest.Test {
     
     public function testBinding() {
         var collection = new ServiceCollection();
-        collection.addSingleton(ChainedDependency, FirstChainDependency).asBinding();
-        collection.addSingleton(ChainedDependency, SecondChainDependency);
+        collection.addSingleton(ChainedDependency, FirstChainDependency);
+        collection.addSingleton(ChainedDependency, SecondChainDependency).asBinding();
 
         var provider = collection.createProvider();
-        var firstService = provider.getService(ChainedDependency, FirstChainDependency);
-        var secondService = provider.getService(ChainedDependency);
+        var firstService = provider.getService(ChainedDependency);
+        var secondService = provider.getService(ChainedDependency, SecondChainDependency);
 
-        Assert.equals(firstService, secondService.getChain());
+        Assert.equals(firstService.getChain(), secondService);
     }
 
 }

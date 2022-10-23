@@ -1,35 +1,14 @@
 package hx.injection;
 
+import hx.injection.generics.GenericDefinition;
 import hx.injection.Destructable;
 import haxe.ds.StringMap;
 
-/*
-	MIT License
-
-	Copyright (c) 2022 Paul SG Cross
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
- */
-final class ServiceProvider implements Destructable {
+final class ServiceProvider implements Destructable implements Service {
 
 	private var _requestedConfigs:StringMap<Any>;
 	private var _requestedServices:StringMap<ServiceGroup>;
+	private var _requestedInstances:StringMap<Service>;
 
 	private var _resolvedSingletonOrder : Array<String>;
 	private var _resolvedSingletons : StringMap<Service>;
@@ -37,35 +16,94 @@ final class ServiceProvider implements Destructable {
 	private var _resolvedScopeOrder : Array<String>;
 	private var _resolvedScopes : StringMap<Service>;
 
-	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>) {
+	public function new(configs : StringMap<Any>, services : StringMap<ServiceGroup>, instances : StringMap<Service>) {
 		_requestedConfigs = configs;
 		_requestedServices = services;
+		_requestedInstances = instances;
 
 		_resolvedSingletonOrder = new Array();
 		_resolvedSingletons = new StringMap();
 		
 		_resolvedScopeOrder = new Array();
 		_resolvedScopes = new StringMap();
+
+		registerSelf();
+	}
+
+	private function registerSelf() {
+		var name = Type.getClassName(ServiceProvider);
+		_resolvedSingletonOrder.push(name);
+		_resolvedSingletons.set(name, this);
 	}
 
 	/**
 		Fetch a service implementation by its abstraction.
 	**/
-	public function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
-		var key = (binding == null)
-			? ServiceProvider.DefaultType
-			: Type.getClassName(binding);
+	overload public inline extern function getService<S:Service>(service:Class<S>, ?binding : Null<Class<S>>):S {
+		return handleGetService(Type.getClassName(service), service, binding);
+	}
 
-		var serviceName = Type.getClassName(service);
+	/**
+		Fetch a service implementation by its abstraction.
+	**/
+	overload public inline extern function getService<S:Service>(service:GenericDefinition<S>, ?binding : Null<Class<S>>):S {
+		return handleGetService(service.signature, service.basetype, binding);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:Class<S>):Iterable<S> {
+		return handleGetServices(Type.getClassName(service), service);
+	}
+
+	/**
+		Fetch an iterator of services by its abstraction.
+	**/
+	overload public inline extern function getServices<S:Service>(service:GenericDefinition<S>):Iterable<S> {
+		return handleGetServices(service.signature, service.basetype);
+	}
+
+	private function handleGetService<S:Service>(name : String, service:Class<S>, ?binding : Null<Class<S>>):S {
+		var serviceName = name;
+		var instance = _requestedInstances.get(name);
+		if(instance != null)
+			return Std.downcast(instance, service);
+
 		var requestedGroup = _requestedServices.get(serviceName);
-		var requestedService = requestedGroup.getServiceTypes().get(key);
+		var requestedService = null;
+		switch(binding) {
+			case null:
+				requestedService = requestedGroup.getServices()[0];
+			default:
+				requestedService = requestedGroup.getServiceAtKey(Type.getClassName(binding));
+		}
+		
 		if (requestedService == null) {
-			throw new haxe.Exception('Service of type \'${serviceName}\' (${key}) not found.');
+			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
 		}
 
 		var implementation = handleServiceRequest(requestedService);
 
 		return Std.downcast(implementation, service);
+	}
+
+	private function handleGetServices<S:Service>(name : String, service:Class<S>):Iterable<S> {
+		var serviceName = name;
+		var requestedGroup = _requestedServices.get(serviceName);
+
+		var services = [];
+		var requestedServices = requestedGroup.getServices();
+		
+		if (requestedServices == null) {
+			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
+		}
+
+		for(service in requestedServices) {
+			services.push(handleServiceRequest(service));
+		}
+		
+		return cast services;
 	}
 
 	/**
@@ -77,7 +115,7 @@ final class ServiceProvider implements Destructable {
 		return this;
 	}
 
-	private function handleServiceRequest(serviceType:ServiceType):Service {
+	private function handleServiceRequest(serviceType:InternalServiceType):Service {
 		switch (serviceType) {
 			case Singleton(implementation):
 				return handleSingletonService(implementation);
@@ -114,15 +152,40 @@ final class ServiceProvider implements Destructable {
 	}
 
 	private function buildDependencyTree(service:String):Service {
-		var dependencies = [];
+		var dependencies : Array<Dynamic> = [];
 		var args = getServiceArgs(service);
 		for (arg in args) {
-			var dependency = getRequestedService(arg);
-			if (dependency != null) {
-				var serviceInstance = handleServiceRequest(dependency);
-				dependencies.push(serviceInstance);
-				continue;
-			}
+				var reg = ~/Iterable\((.+)\)/;
+				switch (reg.match(arg)) {
+					case true:
+						var type = reg.matched(1);
+						var dependencyArray = getRequestedService(type);
+						if (dependencyArray != null) {
+							var iterator = [];
+							for(dependency in dependencyArray) {
+								iterator.push(handleServiceRequest(dependency));
+							}
+							dependencies.push(iterator);
+							continue;
+						}
+					case false:
+						var binding = arg.split('|');
+						var serviceType = null;
+						switch(binding.length) {
+							case 2:
+								serviceType = getBoundService(binding[0], binding[1]);
+							default:
+								serviceType = getRequestedService(arg) != null 
+								? getRequestedService(arg)[0] 
+								: null;
+						}
+						
+						if (serviceType != null) {
+							var serviceInstance = handleServiceRequest(serviceType);
+							dependencies.push(serviceInstance);
+							continue;
+						}
+				}
 
 			var config = getRequestedConfig(arg);
 			if (config != null) {
@@ -157,18 +220,18 @@ final class ServiceProvider implements Destructable {
 		return _requestedConfigs.get(config);
 	}
 
-	private function getRequestedService(serviceName:String):ServiceType {
-		var serviceDefinition = serviceName.split('|');
-		var serviceName = serviceDefinition[0];
-		var key = (serviceDefinition[1] != null)
-			? serviceDefinition[1] 
-			: ServiceProvider.DefaultType;
-
+	private function getRequestedService(serviceName:String):Array<InternalServiceType> {
 		var requested = _requestedServices.get(serviceName);
 		if(requested != null) {
-			return requested.getServiceTypes().get(key);
+			return requested.getServices();
 		}
 		return null;
+	}
+
+	private function getBoundService(serviceName:String, key : String):InternalServiceType {
+		var requested = _requestedServices.get(serviceName);
+		
+		return requested.getServiceAtKey(key);
 	}
 
 	public function destroy() : Void {
@@ -184,7 +247,7 @@ final class ServiceProvider implements Destructable {
 	private function destroySingletons() : Void {
 		for(key in _resolvedSingletonOrder) {
 			var singleton = _resolvedSingletons.get(key);
-			if(Std.isOfType(singleton, Destructable)) {
+			if(Std.isOfType(singleton, Destructable) && singleton != this) {
 				cast(singleton, Destructable).destroy();
 			}
 		}

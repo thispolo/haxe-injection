@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "tests\\unit"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}
