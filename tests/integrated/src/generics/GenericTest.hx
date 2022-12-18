@@ -4,6 +4,8 @@ import hx.injection.generics.Generic;
 import hx.injection.ServiceCollection;
 import generics.test.*;
 
+using hx.injection.ServiceExtensions;
+
 final class GenericTest {
 
     public function new() { }

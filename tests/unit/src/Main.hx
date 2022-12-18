@@ -9,7 +9,8 @@ final class Main {
             new binding.BindingTest(),
             new iterators.IteratorTest(),
             new generic.GenericTest(),
-            new protected.ProtectedTest()
+            new protected.ProtectedTest(),
+            new extensions.ExtensionsTest()
         ]);
     }
 }
