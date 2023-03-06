@@ -10,7 +10,8 @@ final class Main {
             new iterators.IteratorTest(),
             new generic.GenericTest(),
             new protected.ProtectedTest(),
-            new extensions.ExtensionsTest()
+            new extensions.ExtensionsTest(),
+            new utils.UtilsTest()
         ]);
     }
 }
