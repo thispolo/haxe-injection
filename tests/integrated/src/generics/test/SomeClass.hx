@@ -2,7 +2,7 @@ package generics.test;
 
 import hx.injection.Service;
 
-final class SomeClass implements Service {
+final class SomeClass extends SomeOtherClass {
 
     private var _service1 : GenericService<Int>;
     private var _service2 : GenericService<SomeClass>;

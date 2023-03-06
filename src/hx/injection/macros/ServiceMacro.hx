@@ -113,7 +113,9 @@ class ServiceMacro {
 				
 				var access = [Access.APrivate];
 				if(superClassIsService(classType)) {
-					access.push(Access.AOverride);
+					// Only if we have defined a ctor, otherwise don't
+					if(superHasCtor(classType))
+						access.push(Access.AOverride);
 				}
 				
 				var newField = {
@@ -176,6 +178,16 @@ class ServiceMacro {
 				return true;
 			}
 			return superClassIsService(superType);
+		} else return false;
+	}
+
+	private static function superHasCtor(type : ClassType) : Bool {
+		var superClass = type.superClass;
+		if(superClass != null) {
+			var superType = superClass.t.get();
+			if(superType.constructor != null)
+				return true;
+			else return superHasCtor(superType);
 		} else return false;
 	}
 }
