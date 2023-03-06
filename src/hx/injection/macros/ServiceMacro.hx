@@ -31,51 +31,56 @@ class ServiceMacro {
 				var pos = field.pos;
 				var metas = field.meta;
 
-				switch(field.kind) {
-					case FFun(f):
-						//field.kind = FFun({args:f.args, ret: f.ret, expr: macro {$e{f.expr} trace('test');}});
-						for(arg in f.args) {
-							var newField = {
-								name: '_${arg.name}',
-								access: [APrivate],
-								kind: FVar(arg.type, null),
-								pos: Context.currentPos(),
-							}
-							fields.push(newField);
-						}
-					default:
-				}
-
 				var names = new StringMap();
 				if(metas != null) {
 					for(meta in metas) {
-						if(meta.name == ':binding') {
-							var expr1 = meta.params[0].expr;
-							var expr2 = meta.params[1].expr;
-							switch([expr1, expr2]) {
-								case [EConst(CIdent(s1)), _]:
-									switch (field.kind) {
-										case FFun(f):
-											var check = false;
-											for(arg in f.args) {
-												if(arg.name == s1) {
-													check = true;
-													break;
+						switch(meta.name) {
+							case ':binding':
+								var expr1 = meta.params[0].expr;
+								var expr2 = meta.params[1].expr;
+								switch([expr1, expr2]) {
+									case [EConst(CIdent(s1)), _]:
+										switch (field.kind) {
+											case FFun(f):
+												var check = false;
+												for(arg in f.args) {
+													if(arg.name == s1) {
+														check = true;
+														break;
+													}
 												}
+												if(!check)
+													Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
+											default:
+										}
+										var type = getClassType(expr2);
+										try {
+											Context.getType(type);
+										} catch (e : Dynamic) {
+											Context.error('No such type \"${type}\"" exists to bind in ${Context.getLocalModule()}', pos);
+										}
+										names.set(s1, type);
+									default:
+								}
+							case ':autoCtor':
+								switch(field.kind) {
+									case FFun(f):
+										var block = [];
+										for(arg in f.args) {
+											var newField = {
+												name: '_${arg.name}',
+												access: [APrivate],
+												kind: FVar(arg.type, null),
+												pos: Context.currentPos(),
 											}
-											if(!check)
-												Context.error('No such argument ${s1} for ${Context.getLocalModule()}', pos);
-										default:
-									}
-									var type = getClassType(expr2);
-									try {
-										Context.getType(type);
-									} catch (e : Dynamic) {
-										Context.error('No such type \"${type}\"" exists to bind in ${Context.getLocalModule()}', pos);
-									}
-									names.set(s1, type);
-								default:
-							}
+											fields.push(newField);
+											block.push(macro {$i{'_${arg.name}'} = $i{'${arg.name}'}});
+										}
+				
+										field.kind = FFun({args:f.args, ret: f.ret, expr: macro {$e{f.expr} $b{block}}});
+				
+									default:
+								}
 						}
 					}
 				}
