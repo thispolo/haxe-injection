@@ -10,13 +10,22 @@ final class UtilsTest extends utest.Test {
     
     public function testUtils() {
         var collection = new ServiceCollection();
-        collection.addSingleton(TestService);
+        collection.addSingleton(TestSuperService, TestService);
         collection.addSingleton(InjectedService);
 
         var provider = collection.createProvider();
-        var test = provider.getService(TestService);
+        var test = provider.getService(TestSuperService);
         var injected = provider.getService(InjectedService);
-        Assert.equals(test.injected(), injected);
+        Assert.equals(injected, test.injected());
     }
 
+    public function testValue() {
+        var collection = new ServiceCollection();
+        collection.addSingleton(TestSuperService, TestService);
+        collection.addSingleton(InjectedService);
+
+        var provider = collection.createProvider();
+        var test = provider.getService(TestSuperService);
+        Assert.equals(5, test.value());
+    }
 }
