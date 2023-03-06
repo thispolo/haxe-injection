@@ -31,6 +31,21 @@ class ServiceMacro {
 				var pos = field.pos;
 				var metas = field.meta;
 
+				switch(field.kind) {
+					case FFun(f):
+						//field.kind = FFun({args:f.args, ret: f.ret, expr: macro {$e{f.expr} trace('test');}});
+						for(arg in f.args) {
+							var newField = {
+								name: '_${arg.name}',
+								access: [APrivate],
+								kind: FVar(arg.type, null),
+								pos: Context.currentPos(),
+							}
+							fields.push(newField);
+						}
+					default:
+				}
+
 				var names = new StringMap();
 				if(metas != null) {
 					for(meta in metas) {
