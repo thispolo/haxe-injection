@@ -11,7 +11,8 @@ final class Main {
             new generic.GenericTest(),
             new protected.ProtectedTest(),
             new extensions.ExtensionsTest(),
-            new utils.UtilsTest()
+            new utils.UtilsTest(),
+            new consistency.ConsistencyTest()
         ]);
     }
 }
