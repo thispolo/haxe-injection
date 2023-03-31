@@ -10,14 +10,16 @@ final class MockTest extends utest.Test {
     
     public function testMock() {
         var collection = new ServiceCollection();
-        collection.addSingleton(NumberService, Mock.of(mocking.NumberService, id, {
+        var mock = Mock.of(mocking.NumberService, id, {
             return 5 + arg;
-        }));
+        });
+
+        collection.addSingleton(NumberService, mock);
 
         var provider = collection.createProvider();
         var service = provider.getService(NumberService);
       
-        Assert.equals(10, service.id(5));
+        Assert.equals(7, service.id(2));
     }
 
 }

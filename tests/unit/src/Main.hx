@@ -12,7 +12,8 @@ final class Main {
             new protected.ProtectedTest(),
             new extensions.ExtensionsTest(),
             new utils.UtilsTest(),
-            new consistency.ConsistencyTest()
+            new consistency.ConsistencyTest(),
+            new mocking.MockTest()
         ]);
     }
 }
