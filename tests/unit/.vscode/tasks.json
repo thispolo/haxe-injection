@@ -1,0 +1,69 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "haxe",
+            "label": "haxe: build",
+            "args": "active configuration",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+		{
+			"label": "C++ (debug)",
+			"type": "shell",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-cpp",
+				"builds/cpp/debug",
+				"-lib",
+				"hxcpp-debug-server",
+                "-debug"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		},
+		{
+			"label": "C++",
+			"type": "shell",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-cpp",
+				"builds/cpp/release"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		},
+		{
+			"label": "Javascript",
+			"type": "shell",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-js",
+				"builds/js/release/main.js",
+				"-lib",
+				"hxnodejs"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		}
+    ]
+}

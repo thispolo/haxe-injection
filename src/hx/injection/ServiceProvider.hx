@@ -68,7 +68,7 @@ final class ServiceProvider implements Destructable implements Service {
 		var serviceName = name;
 		var instance = _requestedInstances.get(name);
 		if(instance != null)
-			return Std.downcast(instance, service);
+			return (cast instance);
 
 		var requestedGroup = _requestedServices.get(serviceName);
 		var requestedService = null;
@@ -85,7 +85,7 @@ final class ServiceProvider implements Destructable implements Service {
 
 		var implementation = handleServiceRequest(serviceName, requestedService);
 
-		return Std.downcast(implementation, service);
+		return (cast implementation);
 	}
 
 	private function handleGetServices<S:Service>(name : String, service:Class<S>):Iterable<S> {
