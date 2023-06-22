@@ -2,34 +2,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "C++ (debug)",
-			"type": "hxcpp",
-			"request": "launch",
-			"preLaunchTask": "C++ (debug)",
-			"program": "${workspaceFolder}/builds/cpp/debug/Main-debug.exe"
-		},
-		{
-			"name": "C++",
-			"type": "hxcpp",
-			"request": "launch",
-			"preLaunchTask": "C++",
-			"program": "${workspaceFolder}/builds/cpp/release/Main.exe"
-		},
-		{
-			"name": "Macro",
+			"name": "Interpreter",
 			"type": "haxe-eval",
-			"request": "launch"
-		},
-		{
-			"name": "Javascript",
-			"type": "node",
 			"request": "launch",
-			"preLaunchTask": "Javascript",
-			"program": "${workspaceFolder}/builds/js/release/main.js",
-			"sourceMaps": true,
-			"outFiles": [
-				"${workspaceFolder}/builds/js/release/*.js"
-			]
-		},
+			"args": ["build.hxml", "--interp"]
+		}
 	]
 }

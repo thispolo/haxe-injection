@@ -1,16 +1,79 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558 
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "type": "haxe",
-            "label": "haxe: build",
-            "args": "active configuration",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "haxe",
+			"args": "active configuration",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Flash (debug)",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-swf",
+				"export/run.swf",
+				"-D",
+				"fdb"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		},
+		{
+			"label": "JS (debug)",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-js",
+				"export/run.js",
+				"-lib",
+				"hxnodejs"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		},
+		{
+			"label": "C++ (debug)",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-cpp",
+				"export/cpp",
+				"-lib",
+				"hxcpp-debug-server"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		},
+		{
+			"label": "HL/JIT (debug)",
+			"command": "haxe",
+			"args": [
+				"build.hxml",
+				"-hl",
+				"export/run.hl"
+			],
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			]
+		}
+	]
 }

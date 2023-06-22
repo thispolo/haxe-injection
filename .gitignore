@@ -1,4 +1,7 @@
 build.hxml
 bin/
+builds/
+export/
+dump/
 .unittest/
 unit.code-workspace

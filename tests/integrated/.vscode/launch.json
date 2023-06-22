@@ -1,15 +1,50 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "HXCPP",
-            "type": "hxcpp",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/Main-debug.exe",
-            "preLaunchTask": "haxe: build"
-        }
-    ]
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Flash",
+			"type": "fdb",
+			"request": "launch",
+			"preLaunchTask": "Flash (debug)",
+			"program": "${workspaceFolder}/export/run.swf"
+		},
+		{
+			"name": "JavaScript",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceFolder}/export/run.js",
+			"preLaunchTask": "JS (debug)",
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceFolder}/export/*.js"
+			]
+		},
+		{
+			"name": "C++",
+			"type": "hxcpp",
+			"request": "launch",
+			"preLaunchTask": "C++ (debug)",
+			"program": "${workspaceFolder}/export/cpp/Main-debug.exe"
+		},
+		{
+			"name": "HashLink/JIT",
+			"type": "hl",
+			"request": "launch",
+			"preLaunchTask": "HL/JIT (debug)",
+			"hxml": "build.hxml",
+			"cwd": "${workspaceFolder}",
+			"program": "export/run.hl"
+		},
+		{
+			"name": "Interpreter",
+			"type": "haxe-eval",
+			"request": "launch",
+			"args": ["build.hxml", "--interp"]
+		},
+		{
+			"name": "Macro",
+			"type": "haxe-eval",
+			"request": "launch"
+		}
+	]
 }

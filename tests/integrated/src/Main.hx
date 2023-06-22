@@ -2,13 +2,13 @@ import generics.GenericTest;
 import config.ConfigTest;
 
 final class Main {
-    public static function main() {
-        var configtest = new ConfigTest();
-        configtest.runJson();
-        configtest.runEnv();
-        configtest.runEnvAndJson();
+	public static function main() {
+		var configtest = new ConfigTest();
+		configtest.runJson();
+		configtest.runEnv();
+		configtest.runEnvAndJson();
 
-        var generics = new GenericTest();
-        generics.run();
-    }
+		var generics = new GenericTest();
+		generics.run();
+	}
 }
