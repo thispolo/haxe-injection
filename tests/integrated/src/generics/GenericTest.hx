@@ -13,7 +13,6 @@ final class GenericTest {
 		var collection = new ServiceCollection();
 		collection.addSingleton(Generic.of(GenericService, SomeClass), SubService2);
 		collection.addSingleton(SomeClass);
-
 		var provider = collection.createProvider();
 		var some = provider.getService(SomeClass);
 		some.call();
