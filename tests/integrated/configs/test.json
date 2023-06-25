@@ -1,9 +1,9 @@
 {
-    "Outer": {
-        "Inner": {
-            "Value": "My first string.",
-            "AnotherValue": "My other string."
+    "outer": {
+        "inner": {
+            "value": "My first string.",
+            "anotherValue": "My other string."
         },
-        "AnotherInner": 2
+        "anotherInner": 2
     }
 }

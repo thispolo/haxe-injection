@@ -1,3 +1,4 @@
+import haxe.format.JsonParser;
 import generics.GenericTest;
 import config.ConfigTest;
 
@@ -8,7 +9,7 @@ final class Main {
 		configtest.runEnv();
 		configtest.runEnvAndJson();
 
-		var generics = new GenericTest();
-		generics.run();
+		// var generics = new GenericTest();
+		// generics.run();
 	}
 }

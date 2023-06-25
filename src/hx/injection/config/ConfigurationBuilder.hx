@@ -10,13 +10,9 @@ using StringTools;
 
 final class ConfigurationBuilder {
 	private var _root:String;
-	private var _jsonPaths:Array<String>;
-	private var _envVars:Array<String>;
 
 	public function new(root:String) {
 		_root = root;
-		_jsonPaths = new Array();
-		_envVars = new Array();
 	}
 
 	/**
@@ -31,80 +27,47 @@ final class ConfigurationBuilder {
 	}
 
 	/**
-		Add a Json file, pointed to by `path`, to the configuration structure.
+		Resolve a Json file pointed to by `path` to the specific type `T`.
 	**/
-	public function addJson(path:String):ConfigurationBuilder {
-		if (!~/^.*\.json$/.match(path))
-			throw new haxe.Exception('File requires a .json file format');
-
-		_jsonPaths.push('${_root}${path}');
-		return this;
+	@:generic public function resolveJson<T>(path:String):T {
+		try {
+			var content = File.getContent('${_root}/${path}');
+			var json:T = Json.parse(content);
+			return json;
+		} catch (e:haxe.Exception) {
+			throw "";
+		}
 	}
 
 	/**
-		Add an environment variable called `name` to the configuration structure.
+		Add environment variable `name` to the configuration structure.
 	**/
-	public function addEnvVar(name:String):ConfigurationBuilder {
-		#if !sys
-		_envVars.push(name);
-		#else
-		trace('Cannot query environmental variable "${name}" on non sys target.');
-		#end
-		return this;
+	public function resolveEnvVar(name:String):String {
+		return Sys.getEnv(name);
 	}
 
 	/**
 		Create a configuration.
 	**/
 	public function build():Configuration {
-		var result = {};
+		// var result = {};
 
-		for (jsonPath in _jsonPaths) {
-			var json = makeJson(jsonPath);
-			if (json == null)
-				continue;
+		// for (jsonPath in _jsonPaths) {
+		// 	var json = makeJson(jsonPath);
+		// 	if (json == null)
+		// 		continue;
 
-			addToResult(json, result);
-		}
+		// 	addToResult(json, result);
+		// }
 
-		for (vars in _envVars) {
-			var env = Sys.getEnv(vars);
-			if (env == null)
-				throw new Exception('No such environment variable \"${vars}\""');
+		// for (vars in _envVars) {
+		// 	var env = Sys.getEnv(vars);
+		// 	if (env == null)
+		// 		throw new Exception('No such environment variable \"${vars}\""');
 
-			Reflect.setField(result, vars.toLowerCase(), env);
-		}
+		// 	Reflect.setField(result, vars.toLowerCase(), env);
+		// }
 
-		return new Configuration(result);
-	}
-
-	private function makeJson(source:String):Dynamic {
-		try {
-			var content = File.getContent(source);
-			var sanitised = content.replace('\r', '');
-			sanitised = sanitised.replace('\n', '');
-			sanitised = sanitised.replace('\t', '');
-			return Json.parse(sanitised);
-		} catch (e:Exception) {
-			return null;
-		}
-	}
-
-	private function addToResult(source:Dynamic, destination:Dynamic):Void {
-		try {
-			for (field in Reflect.fields(source)) {
-				if (field == '0')
-					break;
-
-				var inner = {};
-				addToResult(Reflect.field(source, field), inner);
-				if (Reflect.fields(inner).length > 0)
-					Reflect.setField(destination, field.toLowerCase(), inner);
-				else
-					Reflect.setField(destination, field.toLowerCase(), Reflect.field(source, field));
-			}
-		} catch (e:Exception) {
-			trace('Invalid value');
-		}
+		return null;
 	}
 }
