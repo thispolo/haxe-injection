@@ -1,5 +1,7 @@
 build.hxml
 bin/
-.vscode/
+builds/
+export/
+dump/
 .unittest/
 unit.code-workspace

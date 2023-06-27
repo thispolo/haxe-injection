@@ -1,5 +1,6 @@
 -cp src
--main Main
--lib haxe-injection
+-cp ../../src
+
 -lib utest
--x Main
+
+--run Main
