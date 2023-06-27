@@ -179,22 +179,20 @@ It is useful to be able to configure our application with respect to a collectio
     var builder = ConfigurationBuilder.from('MyConfigFolder');
 ```
 
-Jsons and environment variables can then be added to the builder:
+Jsons in this path (and environment variables) can then be resolved by the builder, where Jsons **must** have their type explicitly given:
 
 ```haxe
-    builder.addJson('test.json');
-    builder.addEnvVar('haxepath');
+    var myConfig : MyConfig = builder.resolveJson('test.json');
+    var myEnv = builder.resolveEnvVar('haxepath'); // returns string
 ```
 
-We can then build our configuration file using `builder.build()` and then retrieve values like so:
+We can retrieve values like so:
 
 ```haxe
-    var config = builder.build();
-    var myString = config.getString('key.nestedkey');
-    var myIntArray = config.getIntArray('key.array');
-    var haxePath = config.getString('haxepath');
+    var myString = myConfig.key.nestedkey;
+    var myIntArray = myConfig.key.array;
+    var haxePath = myConfig.haxepath;
 ```
-where nested values from the Json file can be retrieved using a `key1.key2.key3` syntax and so on.
 
 ### Type parameters
 Services that expect type parameters, such as `MyService<Int, Float>` can be added to the service collection like so:
@@ -290,3 +288,24 @@ class MyFirstService implements SomeService implements Destructable {
 ```
 
 will have `Destroy()` called when the provider goes out of scope or is itself destroyed.
+
+### Auto Constructors
+
+On a service constructor, this:
+
+```haxe
+class MyFirstService implements Service {
+    @:autoctor public function new(something : AnotherService) {}
+}
+```
+
+will be converted into this at transpile:
+
+```haxe
+class MyFirstService implements Service {
+    private var _something : AnotherService;
+    public function new(something : AnotherService) {
+        _something = something;
+    }
+}
+```
