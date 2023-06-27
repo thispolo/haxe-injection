@@ -68,7 +68,7 @@ final class ServiceProvider implements Destructable implements Service {
 		var serviceName = name;
 		var instance = _requestedInstances.get(name);
 		if(instance != null)
-			return Std.downcast(instance, service);
+			return (cast instance);
 
 		var requestedGroup = _requestedServices.get(serviceName);
 		var requestedService = null;
@@ -83,9 +83,9 @@ final class ServiceProvider implements Destructable implements Service {
 			throw new haxe.Exception('Service of type \'${serviceName}\' not found.');
 		}
 
-		var implementation = handleServiceRequest(requestedService);
+		var implementation = handleServiceRequest(serviceName, requestedService);
 
-		return Std.downcast(implementation, service);
+		return (cast implementation);
 	}
 
 	private function handleGetServices<S:Service>(name : String, service:Class<S>):Iterable<S> {
@@ -100,7 +100,7 @@ final class ServiceProvider implements Destructable implements Service {
 		}
 
 		for(service in requestedServices) {
-			services.push(handleServiceRequest(service));
+			services.push(handleServiceRequest(serviceName, service));
 		}
 		
 		return cast services;
@@ -115,76 +115,80 @@ final class ServiceProvider implements Destructable implements Service {
 		return this;
 	}
 
-	private function handleServiceRequest(serviceType:InternalServiceType):Service {
+	private function handleServiceRequest(name : String, serviceType:InternalServiceType):Service {
 		switch (serviceType) {
 			case Singleton(implementation):
-				return handleSingletonService(implementation);
+				return handleSingletonService(name, implementation);
 			case Transient(implementation):
-				return handleTransientService(implementation);
+				return handleTransientService(name, implementation);
 			case Scoped(implementation):
-				return handleScopedService(implementation);
+				return handleScopedService(name, implementation);
 			default:
 		}
 	}
 
-	private function handleSingletonService(implementation:String):Service {
+	private function handleSingletonService(name : String, implementation:String):Service {
 		var instance = getSingleton(implementation);
 		if (instance == null) {
-			instance = buildDependencyTree(implementation);
+			instance = buildDependencyTree(name, implementation);
 			_resolvedSingletonOrder.insert(0, implementation);
 			_resolvedSingletons.set(implementation, instance);
 		}
 		return instance;
 	}
 
-	private function handleTransientService(implementation:String):Service {
-		return buildDependencyTree(implementation);
+	private function handleTransientService(name : String, implementation:String):Service {
+		return buildDependencyTree(name, implementation);
 	}
 
-	private function handleScopedService(implementation:String):Service {
+	private function handleScopedService(name : String, implementation:String):Service {
 		var instance = getScoped(implementation);
 		if (instance == null) {
-			instance = buildDependencyTree(implementation);
+			instance = buildDependencyTree(name, implementation);
 			_resolvedScopeOrder.insert(0, implementation);
 			_resolvedScopes.set(implementation, instance);
 		}
 		return instance;
 	}
 
-	private function buildDependencyTree(service:String):Service {
+	private function buildDependencyTree(name : String, service:String):Service {
 		var dependencies : Array<Dynamic> = [];
 		var args = getServiceArgs(service);
 		for (arg in args) {
-				var reg = ~/Iterable\((.+)\)/;
-				switch (reg.match(arg)) {
-					case true:
-						var type = reg.matched(1);
-						var dependencyArray = getRequestedService(type);
-						if (dependencyArray != null) {
-							var iterator = [];
-							for(dependency in dependencyArray) {
-								iterator.push(handleServiceRequest(dependency));
-							}
-							dependencies.push(iterator);
-							continue;
+			var reg = ~/Iterable\((.+)\)/;
+			var matched = reg.match(arg);
+			switch (matched) {
+				case true:
+					var type = reg.matched(1);
+					var dependencyArray = getRequestedService(type);
+					if (dependencyArray != null) {
+						var iterator = [];
+						for(dependency in dependencyArray) {
+							var serviceInstance = handleServiceRequest(name, dependency);
+							checkLifetimeInjection(name, dependency);
+							iterator.push(serviceInstance);
 						}
-					case false:
-						var binding = arg.split('|');
-						var serviceType = null;
-						switch(binding.length) {
-							case 2:
-								serviceType = getBoundService(binding[0], binding[1]);
-							default:
-								serviceType = getRequestedService(arg) != null 
-								? getRequestedService(arg)[0] 
-								: null;
-						}
-						
-						if (serviceType != null) {
-							var serviceInstance = handleServiceRequest(serviceType);
-							dependencies.push(serviceInstance);
-							continue;
-						}
+						dependencies.push(iterator);
+						continue;
+					}
+				case false:
+					var binding = arg.split('|');
+					var serviceType = null;
+					switch(binding.length) {
+						case 2:
+							serviceType = getBoundService(binding[0], binding[1]);
+						default:
+							serviceType = getRequestedService(arg) != null 
+							? getRequestedService(arg)[0] 
+							: null;
+					}
+					
+					if (serviceType != null) {
+						var serviceInstance = handleServiceRequest(name, serviceType);
+						checkLifetimeInjection(name, serviceType);
+						dependencies.push(serviceInstance);
+						continue;
+					}
 				}
 
 			var config = getRequestedConfig(arg);
@@ -200,6 +204,23 @@ final class ServiceProvider implements Destructable implements Service {
 		if(cl != null) 
 			return Type.createInstance(cl, dependencies);
 		else throw new haxe.Exception('Cannot resolve ${service} into a class.');
+	}
+
+	private function checkLifetimeInjection(name : String, next : InternalServiceType) : Void {
+		var group = _requestedServices.get(name);
+		for(service in group.getServices()) {
+			switch(service) {
+				case Singleton(implementation):
+					switch(next) {
+						case Transient(implementation):
+							throw new haxe.Exception('Attempting to inject ${next} into Singleton(${name})');
+						case Scoped(implementation):
+							throw new haxe.Exception('Attempting to inject ${next} into Singleton(${name})');
+						default:
+					}
+				default:
+			}
+		}
 	}
 
 	private function getServiceArgs(service:String) : Array<String> {

@@ -9,6 +9,5 @@
    "description": "A dependency injection container for Haxe",
    "contributors": ["PaulSGCross"],
    "releasenote": "See https://github.com/thispolo/haxe-injection/blob/main/CHANGELOG.md",
-   "version": "3.0.0",
-   "dependencies": { }
+   "version": "3.0.0"
 }

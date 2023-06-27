@@ -1,0 +1,5 @@
+{
+	"haxe.configurations": [
+		{"label": "Eval", "args": ["build.hxml", "--run", "Main"]}
+	]
+}
